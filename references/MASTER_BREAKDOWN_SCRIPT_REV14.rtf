@@ -1,0 +1,3854 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2709
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica-Bold;\f1\froman\fcharset0 Times-Roman;\f2\ftech\fcharset77 Symbol;
+\f3\fswiss\fcharset0 Helvetica;\f4\fnil\fcharset0 Calibri;\f5\fmodern\fcharset0 Courier;
+}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;}
+\margl1440\margr1440\vieww23780\viewh18460\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b\fs28 \cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\b0\fs24 \cf0 \expnd0\expndtw0\kerning0
+# EXECUTION MODE: STEPWISE\
+\
+Extract exactly what appears in the source document.\
+Do not paraphrase, infer, summarize, or assume values.\
+\
+Apply field-specific formatting rules only after harvesting raw values.\
+\
+Apply the NO/NONE 
+\f2 \uc0\u8594 
+\f1  N/H rule only where explicitly instructed in the individual field rules.\
+\
+Field-specific N/H rules override the general Missing red-box rule.\
+\
+\
+# COORDINATE SYSTEM: GIMP-style (origin top-left)\
+\
+Coordinate Origin:\
+Upper-left corner of image (GIMP-style)\
+\
+Y-axis behavior:\
+Y decreases as you move upward.\
+DO NOT invert Y coordinates.\
+\
+\
+# FORM IMAGE DETAILS\
+\
+Image:\
+Benefit Information copy for LEX.jpg\
+\
+Image Resolution:\
+1224 \'d7 1584 px\
+\
+DPI:\
+300\
+\
+\
+# RED BOX / OVERLAY SETTINGS\
+\
+Coordinates:\
+Lower-Left and Lower-Right GIMP coordinates are fixed.\
+\
+Red Box Height:\
+32 px upward from Lower-Left Y coordinate.\
+\
+Red Outline Width:\
+2 px\
+\
+Font:\
+DejaVuSans\
+\
+Font Size:\
+18 pt\
+\
+Text Alignment:\
+LOWER LEFT-ALIGNED\
+\
+Meaning:\
+The text baseline aligns to the Lower-Left Y coordinate of the box unless otherwise specified in the individual field instructions.\
+\
+\
+# DRAWING INSTRUCTIONS\
+\
+If data is successfully harvested:\
+
+\f2 \uc0\u8594 
+\f1  Fill the box area with solid white\
+
+\f2 \uc0\u8594 
+\f1  Overlay formatted text\
+
+\f2 \uc0\u8594 
+\f1  Do NOT draw a red outline\
+\
+If data is missing or cannot be confirmed:\
+
+\f2 \uc0\u8594 
+\f1  Draw red outline box\
+
+\f2 \uc0\u8594 
+\f1  Write:\
+"Missing"\
+\
+Exception:\
+If the individual field rule explicitly says to output:\
+'N/H'\
+then output:\
+'N/H'\
+instead of drawing a Missing box.\
+\
+Do NOT silently continue on unresolved ambiguities.\
+STOP and request clarification if extraction logic conflicts or cannot be determined.\
+\
+\
+# GENERAL PARSING RULES\
+\
+Use the current Stratus table-based format.\
+\
+Primary extraction pattern:\
+\
+1. Find SECTION\
+2. Find SUBSECTION or ROW\
+3. Harvest COLUMN or VALUE\
+4. Apply formatting rules\
+5. Overlay onto form\
+\
+When harvesting from TREATMENT HISTORY:\
+
+\f2 \uc0\u8594 
+\f1  If multiple dates exist for the same code:\
+harvest the most recent date.\
+\
+\
+# FILES\
+\
+Benefit Information copy for LEX.jpg\
+
+\f2 \uc0\u8594 
+\f1  Blank benefit breakdown form image used for overlay placement.\
+\
+\
+# START\
+\
+Read through the project file completely before harvesting.
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# Harvesting Effective Date\'85..\
+\
+EFFECTIVE DATE\
+Lower-Left (GIMP) (916, 356)\
+Lower-Right (GIMP) (1146, 356)\
+\
+Search cue:\
+Find section:\
+'PLAN INFORMATION'\
+\
+Within that section:\
+Search for:\
+'Current Effective Date:'\
+\
+Harvest:\
+the date value immediately following the label\
+\
+Ignore:\
+Original Effective Date\
+Renewal Date\
+Contract Start\
+Date of Birth\
+\
+If value missing:\
+leave RED BOX\
+\
+Formatting:\
+DD-MMM-YY\
+Example:\
+01-JAN-26\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+\
+\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+
+\f1\fs24 \expnd0\expndtw0\kerning0
+# Harvest Last BWX\
+\
+Last BWX\
+Lower-Left (GIMP) (141, 588)\
+Lower-Right (GIMP) (281, 588)\
+\
+Search cue:\
+Find section:\
+'TREATMENT HISTORY'\
+\
+Within that section:\
+Find row/code:\
+'D0274'\
+\
+Harvest:\
+the date value from the 'TREATMENT DETAILS' column\
+\
+If multiple dates are listed:\
+harvest the most recent date\
+\
+If section says:\
+'No treatment history available'\
+or D0274 row is missing:\
+use 'N/H'\
+\
+Formatting:\
+DD-MMM-YY\
+Example:\
+23-APR-25\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f4\fs22 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f3\fs28 \cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Last FMX\'85..\'94\
+\
+Last FMX\
+Lower-Left (GIMP) (413, 588)\
+Lower-Right (GIMP) (576, 588)\
+\
+Search cue:\
+Find section:\
+'TREATMENT HISTORY'\
+\
+Within that section:\
+Find row/code:\
+'D0210'\
+\
+Harvest:\
+the date value from the 'TREATMENT DETAILS' column\
+\
+If D0210 is missing:\
+look for row/code:\
+'D0330'\
+\
+If multiple dates are listed:\
+harvest the most recent date\
+\
+If section says:\
+'No treatment history available'\
+or both D0210 and D0330 rows are missing:\
+use 'N/H'\
+\
+Formatting:\
+DD-MMM-YY\
+Example:\
+12-JAN-23\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Last PANO\'85..\'94\
+\
+Last PANO\
+Lower-Left (GIMP) (719, 588)\
+Lower-Right (GIMP) (867, 588)\
+\
+Search cue:\
+Find section:\
+'TREATMENT HISTORY'\
+\
+Within that section:\
+Find row/code:\
+'D0330'\
+\
+Harvest:\
+the date value from the 'TREATMENT DETAILS' column\
+\
+If D0330 is missing:\
+look for row/code:\
+'D0210'\
+\
+If multiple dates are listed:\
+harvest the most recent date\
+\
+If section says:\
+'No treatment history available'\
+or both D0330 and D0210 rows are missing:\
+use 'N/H'\
+\
+Formatting:\
+DD-MMM-YY\
+Example:\
+12-JAN-23\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Last Ex/PX\'85..\'94\
+\
+Last Ex/PX\
+Lower-Left (GIMP) (1000, 588)\
+Lower-Right (GIMP) (1162, 588)\
+\
+Search cue:\
+Find section:\
+'TREATMENT HISTORY'\
+\
+Within that section:\
+Find row/code:\
+'D0120'\
+\
+Harvest:\
+the date value from the 'TREATMENT DETAILS' column\
+\
+Then find row/code:\
+'D1110'\
+\
+Harvest:\
+the date value from the 'TREATMENT DETAILS' column\
+\
+If D1110 is missing:\
+look for row/code:\
+'D1120'\
+\
+If multiple dates are listed:\
+harvest the most recent date for each code\
+\
+If section says:\
+'No treatment history available'\
+or exam row is missing:\
+use 'N/H' for exam date\
+\
+If section says:\
+'No treatment history available'\
+or both D1110 and D1120 rows are missing:\
+use 'N/H' for prophy date\
+\
+Formatting:\
+DD-MMM-YY / DD-MMM-YY\
+or\
+N/H / N/H\
+\
+Example:\
+29-OCT-25 / 29-OCT-25\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+
+\f1\fs24 \expnd0\expndtw0\kerning0
+# \'93Harvesting Waiting Period\'85..\'94\
+\
+Waiting Period\
+Lower-Left (GIMP) (536, 885)\
+Lower-Right (GIMP) (737, 885)\
+\
+Search cue:\
+First search section:\
+'CLASSIFICATIONS'\
+\
+Within that section:\
+Check:\
+'BASIC'\
+and\
+'MAJOR'\
+\
+Harvest:\
+the value following:\
+'Waiting Period:'\
+\
+Rules:\
+If BASIC and MAJOR both say 'No'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+No\
+\
+If either BASIC or MAJOR says 'Yes'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Yes\
+\
+If CLASSIFICATIONS section missing:\
+search NOTES section for:\
+'NO WAITING PERIOD'\
+\
+If found:\
+output:\
+No\
+\
+If notes contain:\
+'WAITING PERIOD'\
+without 'NO'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Yes\
+\
+If no waiting period information found:\
+leave RED BOX\
+\
+Formatting:\
+Yes or No\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Max\'85..\'94\
+\
+Max\
+Lower-Left (GIMP) (83, 885)\
+Lower-Right (GIMP) (208, 885)\
+\
+Search cue:\
+Find section:\
+'GENERAL MAXIMUM'\
+\
+Within that section:\
+Find subsection:\
+'INDIVIDUAL'\
+\
+Harvest:\
+the dollar amount following:\
+'Amount:'\
+\
+Ignore:\
+Used\
+Remaining\
+Family deductible amounts\
+\
+If value missing:\
+leave RED BOX\
+\
+Formatting:\
+$X,XXX\
+(no cents)\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+
+\f1\fs24 \expnd0\expndtw0\kerning0
+# \'93Harvesting DED Max\'85..\'94\
+\
+DED Max\
+Lower-Left (GIMP) (283, 885)\
+Lower-Right (GIMP) (395, 885)\
+\
+Search cue:\
+Find section:\
+'DEDUCTIBLE INFORMATION'\
+\
+Within that section:\
+Find subsection:\
+'INDIVIDUAL'\
+\
+Harvest:\
+the dollar amount following:\
+'Amount:'\
+\
+Ignore:\
+Used\
+Remaining\
+Family deductible amounts\
+\
+If value missing:\
+leave RED BOX\
+\
+Formatting:\
+$X\
+or\
+$XXX\
+(no cents)\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Coordination of Benefits\'85..\'94\
+\
+Coordination of Benefits\
+Lower-Left (GIMP) (1030, 885)\
+Lower-Right (GIMP) (1186, 885)\
+\
+Search cue:\
+First search section:\
+'NOTES'\
+\
+Within NOTES:\
+Search for:\
+'COB:'\
+\
+If found:\
+Harvest the value immediately following:\
+'COB:'\
+\
+Then stop searching.\
+\
+If 'COB:' is not found in NOTES:\
+Find section:\
+'PLAN LIMITATIONS'\
+\
+Within that section:\
+Search for:\
+'COB Rule:'\
+\
+Harvest:\
+the value immediately following the label\
+\
+If COB Rule is:\
+'\'96'\
+or blank:\
+\
+then search for:\
+'COB Applies:'\
+\
+Rules:\
+If COB Applies = No\
+
+\f2 \uc0\u8594 
+\f1  output:\
+No\
+\
+If COB Applies = Yes\
+and COB Rule missing\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Yes\
+\
+If value missing:\
+leave RED BOX\
+\
+Formatting:\
+Copy contents exactly as found\
+\
+Examples:\
+NON-DUP\
+Standard\
+No\
+Yes\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# Coordination of Benefits Alert Add-On\
+\
+After Coordination of Benefits value is harvested and formatted:\
+\
+If final COB output is exactly:\
+'Standard'\
+\
+
+\f2 \uc0\u8594 
+\f1  do not add alert text\
+\
+If final COB output is anything other than:\
+'Standard'\
+\
+
+\f2 \uc0\u8594 
+\f1  overlay alert text:\
+NON DUPLICATION OF BENEFITS!!!\
+\
+Placement:\
+Lower-Left (GIMP) (658,65)\
+Lower-Right (GIMP) (1131,65)\
+\
+Box behavior:\
+No border\
+No white fill\
+Text only\
+\
+Font:\
+DejaVuSans-Bold\
+\
+Font Size:\
+18 pt\
+\
+Text Color:\
+Red\
+\
+Text Case:\
+UPPERCASE\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+\
+UNKNOWN RULE:\
+\
+If final COB output is unknown, blank, unrecognized, missing, or not listed:\
+
+\f2 \uc0\u8594 
+\f1  overlay alert text:\
+COB-UNKNOWN\
+\
+Placement:\
+Lower-Left (GIMP) (658,65)\
+Lower-Right (GIMP) (1131,65)\
+\
+Box behavior:\
+No border\
+No white fill\
+Text only\
+\
+Font:\
+DejaVuSans-Bold\
+\
+Font Size:\
+18 pt\
+\
+Text Color:\
+Red\
+\
+Text Case:\
+UPPERCASE\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Prev\'85..\'94\
+\
+Prev\
+Lower-Left (GIMP) (87, 948)\
+Lower-Right (GIMP) (142, 948)\
+\
+Search cue:\
+Find section:\
+'CLASSIFICATIONS'\
+\
+Within that section:\
+Find subsection:\
+'DIAGNOSTIC & PREVENTIVE'\
+\
+Harvest:\
+the value following:\
+'Coverage %:'\
+\
+If value missing:\
+leave RED BOX\
+\
+Formatting:\
+XX%\
+Examples:\
+100%\
+80%\
+\
+Rules:\
+Remove spaces between number and %\
+Remove decimals\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Prev DED\'85..\'94\
+\
+Prev DED\
+Lower-Left (GIMP) (220, 948)\
+Lower-Right (GIMP) (249, 948)\
+\
+Search cue:\
+Find section:\
+'CLASSIFICATIONS'\
+\
+Within that section:\
+Find subsection:\
+'DIAGNOSTIC & PREVENTIVE'\
+\
+Harvest:\
+the value following:\
+'DED Applies:'\
+\
+If value missing:\
+leave RED BOX\
+\
+Formatting:\
+Yes\
+or\
+No\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Basic\'85..\'94\
+\
+Basic\
+Lower-Left (GIMP) (352, 948)\
+Lower-Right (GIMP) (406, 948)\
+\
+Search cue:\
+Find section:\
+'CLASSIFICATIONS'\
+\
+Within that section:\
+Find subsection:\
+'BASIC'\
+\
+Harvest:\
+the value following:\
+'Coverage %:'\
+\
+If value missing:\
+leave RED BOX\
+\
+Formatting:\
+XX%\
+Examples:\
+90%\
+80%\
+\
+Rules:\
+Remove spaces between number and %\
+Remove decimals\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f5\fs26 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Basic Ded\'85..\'94\
+\
+Basic Ded\
+Lower-Left (GIMP) (481, 948)\
+Lower-Right (GIMP) (517, 948)\
+\
+Search cue:\
+Find section:\
+'CLASSIFICATIONS'\
+\
+Within that section:\
+Find subsection:\
+'BASIC'\
+\
+Harvest:\
+the value following:\
+'DED Applies:'\
+\
+If value missing:\
+leave RED BOX\
+\
+Formatting:\
+Yes\
+or\
+No\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f3\fs28 \cf0 \kerning1\expnd0\expndtw0 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Major\'85..\'94\
+\
+Major\
+Lower-Left (GIMP) (618, 948)\
+Lower-Right (GIMP) (687, 948)\
+\
+Search cue:\
+Find section:\
+'CLASSIFICATIONS'\
+\
+Within that section:\
+Find subsection:\
+'MAJOR'\
+\
+Harvest:\
+the value following:\
+'Coverage %:'\
+\
+If value missing:\
+leave RED BOX\
+\
+Formatting:\
+XX%\
+Examples:\
+60%\
+50%\
+\
+Rules:\
+Remove spaces between number and %\
+Remove decimals\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Major Ded\'85..\'94\
+\
+Major Ded\
+Lower-Left (GIMP) (769, 948)\
+Lower-Right (GIMP) (805, 948)\
+\
+Search cue:\
+Find section:\
+'CLASSIFICATIONS'\
+\
+Within that section:\
+Find subsection:\
+'MAJOR'\
+\
+Harvest:\
+the value following:\
+'DED Applies:'\
+\
+If value missing:\
+leave RED BOX\
+\
+Formatting:\
+Yes\
+or\
+No\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting FMX\'85..\'94\
+\
+FMX\
+Lower-Left (GIMP) (93, 1011)\
+Lower-Right (GIMP) (136, 1011)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D0210'\
+\
+If D0210 missing:\
+look for row/code:\
+'D0330'\
+\
+Harvest:\
+the value from the '%' column\
+\
+If both rows missing:\
+leave RED BOX\
+\
+Formatting:\
+XX%\
+Examples:\
+100%\
+80%\
+\
+Rules:\
+Remove spaces between number and %\
+Remove decimals\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting FMX Ded\'85..\'94\
+\
+FMX Ded\
+Lower-Left (GIMP) (217, 1011)\
+Lower-Right (GIMP) (250, 1011)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D0210'\
+\
+If D0210 missing:\
+look for row/code:\
+'D0330'\
+\
+Harvest:\
+the value from the 'DED' column\
+\
+If both rows missing:\
+leave RED BOX\
+\
+Formatting:\
+Yes\
+or\
+No\
+\
+Rules:\
+If DED column contains:\
+'\'96'\
+then output:\
+No\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting PAs\'85..\'94\
+\
+PAs\
+Lower-Left (GIMP) (324, 1011)\
+Lower-Right (GIMP) (369, 1011)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D0220'\
+\
+If D0220 missing:\
+look for row/code:\
+'D0230'\
+\
+Harvest:\
+the value from the '%' column\
+\
+If both rows missing:\
+leave RED BOX\
+\
+Formatting:\
+XX%\
+Examples:\
+100%\
+80%\
+\
+Rules:\
+Remove spaces between number and %\
+Remove decimals\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting PAs Ded\'85..\'94\
+\
+PAs Ded\
+Lower-Left (GIMP) (442, 1011)\
+Lower-Right (GIMP) (475, 1011)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D0220'\
+\
+If D0220 missing:\
+look for row/code:\
+'D0230'\
+\
+Harvest:\
+the value from the 'DED' column\
+\
+If both rows missing:\
+leave RED BOX\
+\
+Formatting:\
+Yes\
+or\
+No\
+\
+Rules:\
+If DED column contains:\
+'\'96'\
+then output:\
+No\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f3\fs28 \cf0 \kerning1\expnd0\expndtw0 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting EXT 7210\'85..\'94\
+\
+EXT 7210\
+Lower-Left (GIMP) (616, 1011)\
+Lower-Right (GIMP) (689, 1011)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D7210'\
+\
+Harvest:\
+the value from the '%' column\
+\
+If row missing:\
+leave RED BOX\
+\
+Formatting:\
+XX%\
+Examples:\
+90%\
+80%\
+\
+Rules:\
+Remove spaces between number and %\
+Remove decimals\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting D7220\'85..\'94\
+\
+D7220\
+Lower-Left (GIMP) (759, 1011)\
+Lower-Right (GIMP) (826, 1011)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D7220'\
+\
+Harvest:\
+the value from the '%' column\
+\
+If row missing:\
+leave RED BOX\
+\
+Formatting:\
+XX%\
+Examples:\
+60%\
+80%\
+\
+Rules:\
+Remove spaces between number and %\
+Remove decimals\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Cal or Contract Year\'85..\'94\
+\
+Cal or Contract Year?\
+Lower-Left (GIMP) (250, 823)\
+Lower-Right (GIMP) (453, 823)\
+\
+Search cue:\
+Find section:\
+'PLAN INFORMATION'\
+\
+Within that section:\
+Search for:\
+'Renewal Type:'\
+\
+Harvest:\
+the value immediately following the label\
+\
+If value missing:\
+leave RED BOX\
+\
+Formatting:\
+Copy contents exactly as found\
+\
+Examples:\
+Calendar Year\
+Contract Year\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Ortho MAX\'85..\'94\
+\
+Ortho MAX?\
+Lower-Left (GIMP) (953, 936)\
+Lower-Right (GIMP) (1044, 936)\
+\
+Search cue:\
+Find section:\
+'ORTHODONTICS'\
+\
+Within that section:\
+Find subsection:\
+'LIFETIME MAXIMUM'\
+\
+Harvest:\
+the dollar amount following:\
+'Amount:'\
+\
+If ORTHODONTICS section missing:\
+output:\
+N/A\
+\
+If value missing:\
+leave RED BOX\
+\
+Formatting:\
+$X,XXX\
+(no cents)\
+\
+Examples:\
+$1,500\
+$2,500\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+
+\f1\fs24 \expnd0\expndtw0\kerning0
+# \'93Harvesting Ortho %\'85..\'94\
+\
+Ortho %\
+Lower-Left (GIMP) (1078, 936)\
+Lower-Right (GIMP) (1125, 936)\
+\
+Search cue:\
+First find section:\
+'ORTHODONTICS'\
+\
+Within that section:\
+Find subsection:\
+'COVERAGE DETAILS'\
+\
+Harvest:\
+the value following:\
+'Coverage %:'\
+\
+Rules:\
+If Coverage % is:\
+'\'96'\
+blank\
+0\
+0%\
+N/A\
+or if NOTES says:\
+'ORTHODONTICS IS NOT COVERED'\
+'ORTHO IS NOT COVERED'\
+'ORTHO NOT COVERED'\
+\
+
+\f2 \uc0\u8594 
+\f1  output:\
+N/A\
+\
+If Coverage % has a percentage/value:\
+
+\f2 \uc0\u8594 
+\f1  output formatted percentage\
+\
+If ORTHODONTICS section missing:\
+search NOTES section for:\
+'ORTHO'\
+\
+If no ORTHO coverage percentage can be found:\
+output:\
+N/A\
+\
+Formatting:\
+XX%\
+or\
+N/A\
+\
+Examples:\
+50%\
+40%\
+N/A\
+\
+Rules:\
+Remove spaces between number and %\
+Remove decimals\
+\
+Ignore:\
+Banding Payment\
+Payment Schedule\
+Required Periodic Claims\
+WIP Accepted\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\
+\
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting PERIO\'85..\'94\
+\
+PERIO%?\
+Lower-Left (GIMP) (373, 1068)\
+Lower-Right (GIMP) (426, 1068)\
+\
+Search cue:\
+Find section:\
+'CODE CATEGORIES'\
+\
+Within that section:\
+Find row/category:\
+'Periodontics'\
+\
+Harvest:\
+the value from the 'COVERAGE %' column\
+\
+If row missing:\
+leave RED BOX\
+\
+Formatting:\
+XX%\
+Examples:\
+60%\
+90%\
+\
+Rules:\
+Remove spaces between number and %\
+Remove decimals\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting PERIO DED\'85..\'94\
+\
+PERIO DED\
+Lower-Left (GIMP) (511, 1068)\
+Lower-Right (GIMP) (568, 1068)\
+\
+Search cue:\
+Find section:\
+'CODE CATEGORIES'\
+\
+Within that section:\
+Find row/category:\
+'Periodontics'\
+\
+Harvest:\
+the value from the 'DED APPLIES' column\
+\
+If row missing:\
+leave RED BOX\
+\
+Formatting:\
+Yes\
+or\
+No\
+\
+Rules:\
+If DED APPLIES column contains:\
+'\'96'\
+then output:\
+No\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting ENDO\'85..\'94\
+\
+ENDO:\
+Lower-Left (GIMP) (653, 1068)\
+Lower-Right (GIMP) (709, 1068)\
+\
+Search cue:\
+Find section:\
+'CODE CATEGORIES'\
+\
+Within that section:\
+Find row/category:\
+'Endodontics'\
+\
+Harvest:\
+the value from the 'COVERAGE %' column\
+\
+If row missing:\
+leave RED BOX\
+\
+Formatting:\
+XX%\
+Examples:\
+80%\
+90%\
+\
+Rules:\
+Remove spaces between number and %\
+Remove decimals\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting ENDO DED\'85..\'94\
+\
+ENDO DED:\
+Lower-Left (GIMP) (780, 1068)\
+Lower-Right (GIMP) (823, 1068)\
+\
+Search cue:\
+Find section:\
+'CODE CATEGORIES'\
+\
+Within that section:\
+Find row/category:\
+'Endodontics'\
+\
+Harvest:\
+the value from the 'DED APPLIES' column\
+\
+If row missing:\
+leave RED BOX\
+\
+Formatting:\
+Yes\
+or\
+No\
+\
+Rules:\
+If DED APPLIES column contains:\
+'\'96'\
+then output:\
+No\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting NG or Night Guard YES NO\'85..\'94\
+\
+NG or Night Guard YES NO\
+Lower-Left (GIMP) (1108, 1068)\
+Lower-Right (GIMP) (1179, 1068)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D9944'\
+\
+Harvest:\
+the value from the '%' column\
+\
+Rules:\
+If value is:\
+0\
+0%\
+No\
+N/A\
+\'96\
+or row missing\
+\
+
+\f2 \uc0\u8594 
+\f1  output:\
+NO\
+\
+Otherwise:\
+output the percentage value\
+\
+Formatting:\
+XX%\
+or\
+NO\
+\
+Examples:\
+60%\
+80%\
+NO\
+\
+Rules:\
+Remove spaces between number and %\
+Remove decimals\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+\
+IF harvested value is a percentage:\
+draw circle:\
+Center point: (991,1056)\
+Radius: 22\
+Thickness: 3 px\
+Color: black solid\
+\
+IF harvested value is:\
+NO\
+\
+draw circle:\
+Center point: (1045,1056)\
+Radius: 22\
+Thickness: 3 px\
+Color: black solid\
+\
+\
+\
+# \'93Harvesting Posterior Comps Downgrade %\'85..\'94\
+\
+Posterior Comps Downgrade? %\
+Lower-Left (GIMP) (376, 1158)\
+Lower-Right (GIMP) (457, 1158)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D2330'\
+\
+If D2330 missing:\
+look for row/code:\
+'D2335'\
+\
+Harvest:\
+the value from the '%' column\
+\
+If both rows missing:\
+leave RED BOX\
+\
+Formatting:\
+XX%\
+or\
+NO\
+\
+Examples:\
+90%\
+80%\
+NO\
+\
+Rules:\
+If value is:\
+0\
+0%\
+\'96\
+N/A\
+\
+
+\f2 \uc0\u8594 
+\f1  output:\
+NO\
+\
+Otherwise:\
+Remove spaces between number and %\
+Remove decimals\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+# \'93Harvesting Posterior Comps Downgrade Yes / No\'85..\'94\
+\
+Posterior Comps Downgrade? Yes / No\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D2330'\
+\
+If D2330 missing:\
+look for row/code:\
+'D2335'\
+\
+Within the selected row:\
+search TREATMENT DETAILS and LIMITATIONS for:\
+'Downgrades:'\
+\
+Rules:\
+If TREATMENT DETAILS or LIMITATIONS contains:\
+'Downgrades: None'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+No\
+\
+If TREATMENT DETAILS or LIMITATIONS contains:\
+'Downgrades:'\
+with any downgrade code/value after it\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Yes\
+\
+If selected row exists but downgrade information is missing:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+No\
+\
+If both D2330 and D2335 rows are missing:\
+leave RED BOX\
+\
+\
+IF output = Yes\
+draw circle:\
+Center point: (298,1152)\
+Radius: 22\
+Thickness: 3 px\
+Color: black solid\
+\
+IF output = No\
+draw circle:\
+Center point: (237,1152)\
+Radius: 22\
+Thickness: 3 px\
+Color: black solid\
+\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+
+\f1\fs24 \expnd0\expndtw0\kerning0
+# \'93Harvesting CROWN\'85..\'94\
+\
+CROWN\
+Lower-Left (GIMP) (653, 1158)\
+Lower-Right (GIMP) (709, 1158)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D2740'\
+\
+Harvest:\
+the value from the '%' column\
+\
+If row missing:\
+leave RED BOX\
+\
+Formatting:\
+XX%\
+Examples:\
+60%\
+50%\
+\
+Rules:\
+Remove spaces between number and %\
+Remove decimals\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting CROWN DED\'85..\'94\
+\
+CROWN DED\
+Lower-Left (GIMP) (780, 1158)\
+Lower-Right (GIMP) (823, 1158)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D2740'\
+\
+Harvest:\
+the value from the 'DED' column\
+\
+If row missing:\
+leave RED BOX\
+\
+Formatting:\
+Yes\
+or\
+No\
+\
+Rules:\
+If DED column contains:\
+'\'96'\
+then output:\
+No\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting CROWN Downgrade\'85..\'94\
+\
+CROWN Downgrade\
+Lower-Left (GIMP) (958, 1167)\
+Lower-Right (GIMP) (1171, 1167)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D2740'\
+\
+Within the selected row:\
+search TREATMENT DETAILS for:\
+'Downgrades:'\
+\
+Rules:\
+If TREATMENT DETAILS contains:\
+'Downgrades:'\
+and contains:\
+'Molar'\
+or\
+'Molars'\
+\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Yes - Molar\
+\
+If TREATMENT DETAILS contains:\
+'Downgrades: None'\
+\
+
+\f2 \uc0\u8594 
+\f1  output:\
+No\
+\
+If D2740 row exists but no downgrade information is present:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Unknown\
+\
+If D2740 row missing:\
+leave RED BOX\
+\
+Formatting:\
+Yes - Molar\
+No\
+Unknown\
+\
+Examples:\
+Yes - Molar\
+No\
+Unknown\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Implant D6010\'85..\'94\
+\
+Implant D6010\
+Lower-Left (GIMP) (202, 1219)\
+Lower-Right (GIMP) (270, 1219)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D6010'\
+\
+Harvest:\
+the value from the '%' column\
+\
+If row missing:\
+leave RED BOX\
+\
+Formatting:\
+XX%\
+or\
+NO\
+\
+Examples:\
+60%\
+50%\
+NO\
+\
+Rules:\
+If value is:\
+0\
+0%\
+\'96\
+N/A\
+\
+
+\f2 \uc0\u8594 
+\f1  output:\
+NO\
+\
+Otherwise:\
+Remove spaces between number and %\
+Remove decimals\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Prior EXT OK\'85..\'94\
+\
+Prior EXT OK\
+Lower-Left (GIMP) (498, 1219)\
+Lower-Right (GIMP) (574, 1219)\
+\
+Search cue:\
+Find section:\
+'PLAN LIMITATIONS'\
+\
+Within that section:\
+Search for:\
+'Missing Tooth Clause:'\
+\
+Harvest:\
+the value immediately following the label\
+\
+Rules:\
+If value = No\
+
+\f2 \uc0\u8594 
+\f1  output:\
+YES\
+\
+If value = Yes\
+
+\f2 \uc0\u8594 
+\f1  output:\
+NO\
+\
+If value = \'96\
+or blank\
+or value missing\
+
+\f2 \uc0\u8594 
+\f1  output:\
+AUTH\
+\
+Explanation:\
+This field uses inverse logic of Missing Tooth Clause.\
+\
+Missing Tooth Clause = Yes\
+means prior extractions are NOT covered.\
+\
+Missing Tooth Clause = No\
+means prior extractions ARE covered.\
+\
+AUTH means:\
+coverage cannot be determined from the breakdown alone\
+and staff should obtain authorization or additional verification.\
+\
+Formatting:\
+YES\
+NO\
+or\
+AUTH\
+\
+Examples:\
+YES\
+NO\
+AUTH\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Temp StayPlate D5820\'85..\'94\
+\
+Temp StayPlate D5820\
+Lower-Left (GIMP) (259, 1288)\
+Lower-Right (GIMP) (409, 1288)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D5820'\
+\
+Harvest:\
+the value from the '%' column\
+\
+If row missing:\
+leave RED BOX\
+\
+Formatting:\
+XX%\
+or\
+NO\
+\
+Examples:\
+60%\
+50%\
+NO\
+\
+Rules:\
+If value is:\
+0\
+0%\
+\'96\
+N/A\
+\
+
+\f2 \uc0\u8594 
+\f1  output:\
+NO\
+\
+Otherwise:\
+Remove spaces between number and %\
+Remove decimals\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+\
+\
+# \'93Harvesting StayPlate Anterior Only\'85..\'94\
+\
+StayPlate Anterior Only\
+Lower-Left (GIMP) (630, 1288)\
+Lower-Right (GIMP) (735, 1288)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D5820'\
+\
+Within the selected row:\
+search LIMITATIONS and TREATMENT DETAILS for phrases indicating anterior-only limitation.\
+\
+Search terms:\
+'Anterior'\
+'Anterior Only'\
+'Anterior Teeth Only'\
+'Anterior teeth'\
+'No posterior'\
+'Posterior not covered'\
+'Anterior replacement only'\
+\
+Rules:\
+If selected row contains anterior-only language:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+YES\
+\
+If selected row clearly states all teeth/all arches/no anterior restriction:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+NO\
+\
+If D5820 row exists but no anterior-only information is found:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+UNKNOWN\
+\
+If D5820 row missing:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+UNKNOWN\
+\
+Formatting:\
+YES\
+NO\
+UNKNOWN\
+\
+Examples:\
+YES\
+NO\
+UNKNOWN\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+\
+\
+# \'93Harvesting Assignment of Benefits\'85..\'94\
+\
+Assignment of Benefits\
+Lower-Left (GIMP) (792, 1344)\
+Lower-Right (GIMP) (928, 1344)\
+\
+Search cue:\
+Find section:\
+'NETWORK COVERAGE'\
+\
+Within that section:\
+Search for:\
+'Assignment of Benefits:'\
+\
+Harvest:\
+the raw value immediately following the label\
+\
+Known possible values:\
+'Yes'\
+'No'\
+'Pays Provider'\
+'Pays Patient'\
+'\'96'\
+blank\
+\
+Rules:\
+If value contains:\
+'Pays Patient'\
+'Patient Reimbursement'\
+'Non-Assigned'\
+'No'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+NO\
+\
+If value contains:\
+'Pays Provider'\
+'Provider Paid'\
+'Yes'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+YES\
+\
+If value is:\
+'\'96'\
+blank\
+label missing\
+or any unrecognized value\
+
+\f2 \uc0\u8594 
+\f1  output:\
+REVIEW\
+\
+Data collection note:\
+Record the raw harvested value whenever output = REVIEW\
+so future parsing rules can be refined.\
+\
+Formatting:\
+YES\
+NO\
+REVIEW\
+\
+Examples:\
+YES\
+NO\
+REVIEW\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+\
+\
+\
+\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+# \'93Harvesting Crown Frequency Limit\'85..\'94\
+\
+Crown Frequency Limit\
+Lower-Left (GIMP) (108, 1429)\
+Lower-Right (GIMP) (240, 1429)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D2740'\
+\
+Within the selected row:\
+search LIMITATIONS for crown frequency wording.\
+\
+Harvest:\
+the frequency interval immediately following:\
+'1 Tooth per'\
+\
+Examples from source:\
+'1 Tooth per 8 Year'\
+'1 Tooth per 10 Year'\
+\
+Rules:\
+If frequency found:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+8YR\
+10YR\
+etc.\
+\
+If D2740 row exists but no frequency interval found:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+UNKNOWN\
+\
+If D2740 row missing:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+UNKNOWN\
+\
+Formatting:\
+8YR\
+10YR\
+UNKNOWN\
+\
+Examples:\
+8YR\
+10YR\
+UNKNOWN\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+
+\f1\fs24 \expnd0\expndtw0\kerning0
+# \'93Harvesting Bridge Frequency Limit\'85..\'94\
+\
+Bridge Frequency Limit\
+Lower-Left (GIMP) (348, 1429)\
+Lower-Right (GIMP) (490, 1429)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D6245'\
+\
+Within the selected row:\
+search LIMITATIONS for bridge frequency wording.\
+\
+Harvest:\
+the frequency interval immediately following:\
+'1 Tooth per'\
+\
+Examples from source:\
+'1 Tooth per 8 Year'\
+'1 Tooth per 10 Year'\
+\
+Rules:\
+If frequency found:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+8YR\
+10YR\
+etc.\
+\
+If D6245 row exists but no frequency interval found:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+UNKNOWN\
+\
+If D6245 row missing:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+UNKNOWN\
+\
+Formatting:\
+8YR\
+10YR\
+UNKNOWN\
+\
+Examples:\
+8YR\
+10YR\
+UNKNOWN\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+\
+# \'93Harvesting Denture Frequency Limit\'85..\'94\
+\
+Denture Frequency Limit\
+Lower-Left (GIMP) (615, 1429)\
+Lower-Right (GIMP) (757, 1429)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D5110'\
+\
+Within the selected row:\
+search LIMITATIONS for denture frequency wording.\
+\
+Harvest:\
+the frequency interval immediately following:\
+'1 Arch per'\
+\
+Examples from source:\
+'1 Arch per 8 Year'\
+'1 Arch per 10 Year'\
+\
+Rules:\
+If frequency found:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+8YR\
+10YR\
+etc.\
+\
+If D5110 row exists but no frequency interval found:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+UNKNOWN\
+\
+If D5110 row missing:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+UNKNOWN\
+\
+Formatting:\
+8YR\
+10YR\
+UNKNOWN\
+\
+Examples:\
+8YR\
+10YR\
+UNKNOWN\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+
+\f1\fs24 \expnd0\expndtw0\kerning0
+# \'93Harvesting Composite Frequency Limit\'85..\'94\
+\
+Composite Frequency Limit\
+Lower-Left (GIMP) (856, 1429)\
+Lower-Right (GIMP) (973, 1429)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D2330'\
+\
+If D2330 missing:\
+look for row/code:\
+'D2335'\
+\
+Within the selected row:\
+search LIMITATIONS for composite frequency wording.\
+\
+Harvest:\
+the frequency interval immediately following:\
+'1 Surface per'\
+\
+Rules:\
+If value contains:\
+'12 Month'\
+or\
+'1 Year'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+1YR\
+\
+If value contains:\
+'24 Month'\
+or\
+'2 Year'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+2YR\
+\
+If value contains:\
+'36 Month'\
+or\
+'3 Year'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+3YR\
+\
+If value contains:\
+'48 Month'\
+or\
+'4 Year'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+4YR\
+\
+If value contains:\
+'60 Month'\
+or\
+'5 Year'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+5YR\
+\
+If value contains:\
+'72 Month'\
+or\
+'6 Year'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+6YR\
+\
+If value contains:\
+'84 Month'\
+or\
+'7 Year'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+7YR\
+\
+If value contains:\
+'No Frequency Limit'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+No Limit\
+\
+If row exists but no recognizable frequency interval found:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+UNKNOWN\
+\
+If both D2330 and D2335 rows missing:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+UNKNOWN\
+\
+Formatting:\
+1YR\
+2YR\
+3YR\
+4YR\
+5YR\
+6YR\
+7YR\
+No Limit\
+UNKNOWN\
+\
+Examples:\
+1YR\
+2YR\
+3YR\
+No Limit\
+UNKNOWN\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+
+\f1\fs24 \expnd0\expndtw0\kerning0
+# \'93Harvesting Fluoride Frequency Limit\'85..\'94\
+\
+Fluoride Frequency Limit\
+Lower-Left (GIMP) (1077, 1429)\
+Lower-Right (GIMP) (1195, 1429)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D1206'\
+\
+If D1206 missing:\
+look for row/code:\
+'D1208'\
+\
+Within the selected row:\
+search LIMITATIONS for fluoride frequency wording.\
+\
+Harvest:\
+the visit quantity and frequency interval.\
+\
+Examples from source:\
+'1 Visit per 6 Month'\
+'2 Visit per 1 Year'\
+'1 Visit per 1 Calendar Year'\
+\
+Rules:\
+If value contains:\
+'No Frequency Limit'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Unlimited\
+\
+Otherwise:\
+Convert to compact readable format:\
+\
+Examples:\
+1 Visit per 6 Month\
+
+\f2 \uc0\u8594 
+\f1  1/6M\
+\
+2 Visit per 1 Year\
+
+\f2 \uc0\u8594 
+\f1  2/YR\
+\
+1 Visit per 1 Calendar Year\
+
+\f2 \uc0\u8594 
+\f1  1/YR\
+\
+1 Visit per 24 Month\
+
+\f2 \uc0\u8594 
+\f1  1/2YR\
+\
+1 Visit per 36 Month\
+
+\f2 \uc0\u8594 
+\f1  1/3YR\
+\
+1 Visit per 48 Month\
+
+\f2 \uc0\u8594 
+\f1  1/4YR\
+\
+1 Visit per 60 Month\
+
+\f2 \uc0\u8594 
+\f1  1/5YR\
+\
+If row exists but no recognizable frequency interval found:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+UNKNOWN\
+\
+If both D1206 and D1208 rows missing:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+UNKNOWN\
+\
+Formatting:\
+1/6M\
+2/YR\
+1/YR\
+1/2YR\
+Unlimited\
+UNKNOWN\
+\
+Examples:\
+1/6M\
+1/YR\
+Unlimited\
+UNKNOWN\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\
+\
+
+\f1\fs24 \expnd0\expndtw0\kerning0
+# \'93Harvesting Exam + Prophy Frequency Limits\'85..\'94\
+\
+Exam Frequency | Prophy Frequency\
+Lower-Left (GIMP) (111, 1474)\
+Lower-Right (GIMP) (466, 1474)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+EXAM FREQUENCY:\
+Find row/code:\
+'D0120'\
+\
+If D0120 missing:\
+look for:\
+'D0140'\
+\
+Within the selected row:\
+search LIMITATIONS for visit frequency wording.\
+\
+PROPHY FREQUENCY:\
+Find row/code:\
+'D1110'\
+\
+If D1110 missing:\
+look for:\
+'D1120'\
+\
+Within the selected row:\
+search LIMITATIONS for visit frequency wording.\
+\
+Harvest:\
+visit quantity and interval for BOTH rows.\
+\
+Examples from source:\
+'2 Visit per 1 Calendar Year'\
+'1 Visit per 6 Month'\
+'2 Visit per 12 Month'\
+'2 in 12 month window'\
+\
+Formatting Rules:\
+\
+Convert:\
+1 Visit per 6 Month\
+
+\f2 \uc0\u8594 
+\f1  1/6\
+\
+2 Visit per 12 Month\
+
+\f2 \uc0\u8594 
+\f1  2/12\
+\
+2 Visit per 1 Year\
+
+\f2 \uc0\u8594 
+\f1  2/12\
+\
+2 Visit per 1 Calendar Year\
+
+\f2 \uc0\u8594 
+\f1  2/Calendar Year\
+\
+2 Visit per Contract Year\
+
+\f2 \uc0\u8594 
+\f1  2/Contract Year\
+\
+2 in 12 month window\
+
+\f2 \uc0\u8594 
+\f1  2/12 Window\
+\
+1 Visit per 24 Month\
+
+\f2 \uc0\u8594 
+\f1  1/24\
+\
+If value contains:\
+'No Frequency Limit'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Unlimited\
+\
+Final output format:\
+ExamFreq | ProphyFreq\
+\
+Examples:\
+2/12 | 2/12\
+1/6 | 2/12\
+2/Calendar Year | 2/Contract Year\
+2/12 Window | 2/12\
+Unlimited | 2/12\
+\
+Rules:\
+If one value missing:\
+
+\f2 \uc0\u8594 
+\f1  use:\
+Please Review\
+\
+Example:\
+Please Review | 2/12\
+\
+If both values missing:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Please Review\
+\
+If parser encounters an unrecognized frequency format:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Please Review\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\
+\
+
+\f1\fs24 \expnd0\expndtw0\kerning0
+# \'93Harvesting FMX/PANO Frequency Limit\'85..\'94\
+\
+FMX/PANO Frequency Limit\
+Lower-Left (GIMP) (621, 1474)\
+Lower-Right (GIMP) (741, 1474)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+FMX:\
+Find row/code:\
+'D0210'\
+\
+PANO:\
+Find row/code:\
+'D0330'\
+\
+Within the selected rows:\
+search LIMITATIONS for frequency wording.\
+\
+Harvest:\
+visit quantity and interval.\
+\
+Examples from source:\
+'1 Visit per 5 Year'\
+'1 Visit per 60 Month'\
+'1 Visit per 3 Year'\
+\
+Formatting Rules:\
+\
+Convert:\
+1 Visit per 6 Month\
+
+\f2 \uc0\u8594 
+\f1  1/6\
+\
+1 Visit per 12 Month\
+
+\f2 \uc0\u8594 
+\f1  1/12\
+\
+1 Visit per 24 Month\
+
+\f2 \uc0\u8594 
+\f1  1/24\
+\
+1 Visit per 36 Month\
+
+\f2 \uc0\u8594 
+\f1  1/36\
+\
+1 Visit per 48 Month\
+
+\f2 \uc0\u8594 
+\f1  1/48\
+\
+1 Visit per 60 Month\
+
+\f2 \uc0\u8594 
+\f1  1/60\
+\
+1 Visit per 5 Year\
+
+\f2 \uc0\u8594 
+\f1  1/5YR\
+\
+1 Visit per 3 Year\
+
+\f2 \uc0\u8594 
+\f1  1/3YR\
+\
+If value contains:\
+'No Frequency Limit'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Unlimited\
+\
+Rules:\
+If both D0210 and D0330 exist and frequencies match:\
+
+\f2 \uc0\u8594 
+\f1  output single normalized value\
+\
+Example:\
+1/60\
+\
+If frequencies differ:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Please Review\
+\
+If one row missing:\
+
+\f2 \uc0\u8594 
+\f1  use remaining valid row\
+\
+If both rows missing:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Please Review\
+\
+If parser encounters unrecognized frequency format:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Please Review\
+\
+Formatting:\
+1/60\
+1/5YR\
+Unlimited\
+Please Review\
+\
+Examples:\
+1/60\
+1/5YR\
+Unlimited\
+Please Review\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+\
+# \'93Harvesting FMX/PANO Shared Frequency\'85..\'94\
+\
+FMX/PANO Shared Frequency\
+Lower-Left (GIMP) (888, 1474)\
+Lower-Right (GIMP) (1002, 1474)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+FMX:\
+Find row/code:\
+'D0210'\
+\
+PANO:\
+Find row/code:\
+'D0330'\
+\
+Within the selected rows:\
+search LIMITATIONS and TREATMENT DETAILS for:\
+'Shared Freq:'\
+\
+Rules:\
+If D0210 references D0330 in Shared Freq\
+OR\
+D0330 references D0210 in Shared Freq\
+
+\f2 \uc0\u8594 
+\f1  output:\
+YES\
+\
+Examples:\
+'Shared Freq: D0330'\
+'Shared Freq: D0210'\
+\
+If both rows exist and no shared frequency wording is found:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+NO\
+\
+If one or both rows missing:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+UNKNOWN\
+\
+If parser cannot determine relationship:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+UNKNOWN\
+\
+Formatting:\
+YES\
+NO\
+UNKNOWN\
+\
+Examples:\
+YES\
+NO\
+UNKNOWN\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+\
+# \'93Harvesting BWX Frequency Limit\'85..\'94\
+\
+BWX Frequency Limit\
+Lower-Left (GIMP) (1071, 1474)\
+Lower-Right (GIMP) (1191, 1474)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D0274'\
+\
+Within the selected row:\
+search LIMITATIONS for bitewing frequency wording.\
+\
+Harvest:\
+visit quantity and interval.\
+\
+Examples from source:\
+'1 Visit per 12 Month'\
+'2 Visit per 1 Year'\
+'1 Visit per 6 Month'\
+\
+Formatting Rules:\
+\
+Convert:\
+1 Visit per 6 Month\
+
+\f2 \uc0\u8594 
+\f1  1/6\
+\
+1 Visit per 12 Month\
+
+\f2 \uc0\u8594 
+\f1  1/12\
+\
+2 Visit per 12 Month\
+
+\f2 \uc0\u8594 
+\f1  2/12\
+\
+2 Visit per 1 Year\
+
+\f2 \uc0\u8594 
+\f1  2/12\
+\
+1 Visit per 24 Month\
+
+\f2 \uc0\u8594 
+\f1  1/24\
+\
+1 Visit per 36 Month\
+
+\f2 \uc0\u8594 
+\f1  1/36\
+\
+1 Visit per 48 Month\
+
+\f2 \uc0\u8594 
+\f1  1/48\
+\
+1 Visit per 60 Month\
+
+\f2 \uc0\u8594 
+\f1  1/60\
+\
+If value contains:\
+'No Frequency Limit'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Unlimited\
+\
+Rules:\
+If row exists but parser encounters unrecognized frequency format:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Please Review\
+\
+If D0274 row missing:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Please Review\
+\
+Formatting:\
+1/6\
+1/12\
+2/12\
+1/24\
+Unlimited\
+Please Review\
+\
+Examples:\
+1/12\
+2/12\
+Unlimited\
+Please Review\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+\
+# \'93Harvesting Problem Focused Exam Frequency Limit\'85..\'94\
+\
+PROB EX Frequency Limit (D0140)\
+Lower-Left (GIMP) (141, 1521)\
+Lower-Right (GIMP) (336, 1521)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D0140'\
+\
+Within the selected row:\
+search LIMITATIONS and TREATMENT DETAILS for frequency wording and special restrictions.\
+\
+Harvest:\
+the most clinically relevant limitation wording.\
+\
+Examples from source:\
+'2 Visit per 12 Month'\
+'2 Visit per 1 Year'\
+'1 Visit per 6 Month'\
+'No Frequency Limit'\
+'With no other services'\
+'Emergency only'\
+'Separate date of service required'\
+\
+Formatting Rules:\
+\
+Convert standard frequencies:\
+\
+1 Visit per 6 Month\
+
+\f2 \uc0\u8594 
+\f1  1/6\
+\
+2 Visit per 12 Month\
+
+\f2 \uc0\u8594 
+\f1  2/12\
+\
+2 Visit per 1 Year\
+
+\f2 \uc0\u8594 
+\f1  2/12\
+\
+1 Visit per 24 Month\
+
+\f2 \uc0\u8594 
+\f1  1/24\
+\
+If value contains:\
+'No Frequency Limit'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Unlimited\
+\
+Special Restriction Rules:\
+\
+If row contains:\
+'With no other services'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+No Other Svcs\
+\
+If row contains:\
+'Emergency only'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Emergency Only\
+\
+If row contains:\
+'Separate date of service required'\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Separate DOS\
+\
+If both a standard frequency and a special restriction exist:\
+
+\f2 \uc0\u8594 
+\f1  combine concise outputs.\
+\
+Example:\
+2/12 + No Other Svcs\
+\
+Rules:\
+If D0140 row missing:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Please Review\
+\
+If parser encounters unrecognized limitation wording:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Please Review\
+\
+Formatting:\
+2/12\
+Unlimited\
+No Other Svcs\
+2/12 + No Other Svcs\
+Emergency Only\
+Separate DOS\
+Please Review\
+\
+Examples:\
+2/12\
+Unlimited\
+2/12 + No Other Svcs\
+Please Review\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+\
+\
+# \'93Harvesting SRP Frequency Limit + Quads/Visit\'85..\'94\
+\
+SRP Frequency Limit\
+Lower-Left (GIMP) (417, 1513)\
+Lower-Right (GIMP) (876, 1513)\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D4341'\
+\
+If D4341 missing:\
+look for row/code:\
+'D4342'\
+\
+Within the selected row:\
+search LIMITATIONS and TREATMENT DETAILS for SRP frequency wording.\
+\
+Also search the selected row/details for:\
+'Quads/Visit:'\
+\
+Harvest:\
+(1) SRP frequency interval\
+(2) Quads/Visit value\
+\
+Frequency Formatting Rules:\
+\
+1 Quadrant per 12 Month\
+
+\f2 \uc0\u8594 
+\f1  1/12\
+\
+1 Quadrant per 24 Month\
+
+\f2 \uc0\u8594 
+\f1  1/24\
+\
+1 Quadrant per 36 Month\
+
+\f2 \uc0\u8594 
+\f1  1/36\
+\
+1 Quadrant per 48 Month\
+
+\f2 \uc0\u8594 
+\f1  1/48\
+\
+1 Quadrant per 60 Month\
+
+\f2 \uc0\u8594 
+\f1  1/60\
+\
+1 Quadrant per 1 Year\
+
+\f2 \uc0\u8594 
+\f1  1/12\
+\
+1 Quadrant per 2 Year\
+
+\f2 \uc0\u8594 
+\f1  1/24\
+\
+1 Quadrant per 3 Year\
+
+\f2 \uc0\u8594 
+\f1  1/36\
+\
+If value contains:\
+'No Frequency Limit'\
+
+\f2 \uc0\u8594 
+\f1  output frequency as:\
+Unlimited\
+\
+Quads/Visit Rules:\
+\
+If Quads/Visit = 4\
+
+\f2 \uc0\u8594 
+\f1  output:\
+4 Quads ok? YES\
+\
+If Quads/Visit is less than 4\
+
+\f2 \uc0\u8594 
+\f1  output:\
+4 Quads ok? NO\
+\
+If Quads/Visit is missing or unreadable\
+
+\f2 \uc0\u8594 
+\f1  output:\
+4 Quads ok? UNKNOWN\
+\
+Final output format:\
+Frequency + " " + 4 Quads ok? YES/NO/UNKNOWN\
+\
+Examples:\
+1/24 4 Quads ok? YES\
+1/36 4 Quads ok? NO\
+Unlimited 4 Quads ok? YES\
+Please Review 4 Quads ok? UNKNOWN\
+\
+Rules:\
+If no recognizable frequency found:\
+
+\f2 \uc0\u8594 
+\f1  output frequency as:\
+Please Review\
+\
+If both D4341 and D4342 rows missing:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Please Review 4 Quads ok? UNKNOWN\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+\
+# \'93Harvesting Patient Name\'85..\'94\
+\
+Patient Name\
+Lower-Left (GIMP) (112,424)\
+Lower-Right (GIMP) (417,424)\
+\
+Search cue:\
+Find section:\
+'PATIENT'\
+\
+Within that section:\
+Harvest:\
+'First Name:'\
+and\
+'Last Name:'\
+\
+Output:\
+First Name + space + Last Name\
+\
+Example:\
+Andy Chen\
+\
+If either first or last name is missing:\
+leave RED BOX\
+\
+Formatting:\
+Copy contents exactly as found\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+\
+\
+# \'93Harvesting Group Number\'85..\'94\
+\
+Group Number\
+Lower-Left (GIMP) (133,252)\
+Lower-Right (GIMP) 336,252)\
+\
+Search cue:\
+Find section:\
+'PLAN INFORMATION'\
+\
+Within that section:\
+Search for:\
+'Group Number:'\
+\
+Harvest:\
+the value immediately following the label\
+\
+Ignore:\
+Policy ID\
+Plan Number\
+Group Name\
+\
+If value missing:\
+leave RED BOX\
+\
+Formatting:\
+Copy contents exactly as found\
+\
+Examples:\
+L14865D001\
+GRP12345\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+
+\f1\fs24 \expnd0\expndtw0\kerning0
+# \'93Harvesting PREV APPLY TO MAX\'85..\'94\
+\
+PREV APPLY TO MAX?\
+Lower-Left (GIMP) (211,1060)\
+Lower-Right (GIMP) (283,1060)\
+\
+Search cue:\
+Find section:\
+'CLASSIFICATIONS'\
+\
+Within that section:\
+Find subsection:\
+'DIAGNOSTIC & PREVENTIVE'\
+\
+Harvest:\
+the value following:\
+'Max Applies:'\
+\
+If value missing:\
+leave RED BOX\
+\
+Formatting:\
+Yes\
+or\
+No\
+\
+Examples:\
+Yes\
+No\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\
+\
+
+\f1\fs24 \expnd0\expndtw0\kerning0
+# \'93Harvesting Subscriber Name\'85..\'94\
+\
+Subscriber Name\
+Lower-Left (GIMP) (145,471)\
+Lower-Right (GIMP) (351,471)\
+\
+Search cue:\
+Find section:\
+'PATIENT'\
+\
+Harvest:\
+'First Name:'\
+and\
+'Last Name:'\
+\
+Then find section:\
+'SUBSCRIBER'\
+\
+Harvest:\
+'First Name:'\
+and\
+'Last Name:'\
+\
+Comparison Rules:\
+\
+If PATIENT full name matches SUBSCRIBER full name exactly:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Patient\
+\
+If names do not match:\
+
+\f2 \uc0\u8594 
+\f1  output:\
+Subscriber First Name + space + Subscriber Last Name\
+\
+Examples:\
+Patient\
+John Smith\
+Mary Chen\
+\
+If subscriber first or last name is missing:\
+leave RED BOX\
+\
+Formatting:\
+Copy contents exactly as found\
+\
+Box height:\
+32 px upward\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+LOWER LEFT-ALIGNED\
+\
+
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+
+\f1\fs24 \expnd0\expndtw0\kerning0
+# \'93Harvesting Sealants\'85..\'94\
+\
+Sealants\
+Upper-Left (GIMP) (930,936)\
+Upper-Right (GIMP) (1186,936)\
+\
+SPECIAL PLACEMENT:\
+This field uses TOP-DOWN multiline rendering.\
+\
+Do NOT use standard lower-left baseline logic.\
+Do NOT subtract 32 px upward.\
+\
+Text starts at:\
+Upper-Left (GIMP) (930,948)\
+\
+Each line flows downward from that point.\
+\
+Search cue:\
+Find section:\
+'PROCEDURE CODES'\
+\
+Within that section:\
+Find row/code:\
+'D1351'\
+\
+Harvest:\
+1. value from '%' column\
+2. age limitation from LIMITATIONS\
+3. frequency limitation from LIMITATIONS\
+4. tooth limitation text from LIMITATIONS, if present\
+\
+Output line order:\
+Line 1: XX%\
+Line 2: Age limitation\
+Line 3: Frequency limitation\
+Line 4: Tooth limitation\
+\
+Rules:\
+If D1351 % is:\
+0\
+0%\
+\'96\
+N/A\
+or row missing\
+\
+
+\f2 \uc0\u8594 
+\f1  output:\
+NO\
+\
+If age limitation missing:\
+omit age line\
+\
+If frequency missing:\
+omit frequency line\
+\
+If tooth limitation missing:\
+omit tooth limitation line\
+\
+Formatting:\
+Remove decimals from %\
+Copy age/frequency/tooth limitation exactly as found\
+\
+Examples:\
+100%\
+Age <= 13\
+1 Tooth per 3 Year\
+All Teeth Covered\
+\
+100%\
+Age <= 15\
+1 Tooth per 36 Month\
+All Permanent Molars\
+\
+Box behavior:\
+No red outline if at least % or NO is found\
+\
+Font:\
+DejaVuSans 18pt\
+\
+Text justification:\
+UPPER LEFT-ALIGNED
+\f3\fs28 \kerning1\expnd0\expndtw0 \
+\
+\
+\
+\pard\pardeftab720\partightenfactor0
+
+\f1\fs24 \cf0 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 # OUTPUT FILE NAMING RULE\
+\
+Final exported JPG filename format:\
+\
+Patient First Name + space + Patient Last Name + space + Group Number + space + Group Name + space + Export Date + ".jpg"\
+\
+Harvest values from:\
+\
+PATIENT section:\
+- First Name:\
+- Last Name:\
+\
+PLAN INFORMATION section:\
+- Group Number:\
+- Group Name:\
+\
+Export Date:\
+Use the current date in format:\
+YYYY-MM-DD\
+\
+Formatting rules:\
+- Replace invalid filename characters:\
+/ \\ : * ? " < > |\
+with "-"\
+- Collapse multiple spaces to single spaces\
+- Trim leading/trailing spaces\
+- Keep hyphens already present in Group Number or Group Name\
+- Do not abbreviate unless instructed\
+\
+If Group Number is missing:\
+use:\
+UNKNOWN GROUP NUMBER\
+\
+If Group Name is missing:\
+use:\
+UNKNOWN GROUP NAME\
+\
+Example:\
+Bob French 01230-10505 AARP - AARP Dental Insurance Plan 2026-05-08.jpg
+\f3\fs28 \kerning1\expnd0\expndtw0 \outl0\strokewidth0 \
+\pard\pardeftab720\partightenfactor0
+\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+<Echo to screen> \'93SCRIPT END\'85.\'94  \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f4\fs22 \cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f3\fs28 \cf0 \
+\
+\
+\
+\
+}
