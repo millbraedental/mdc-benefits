@@ -21,14 +21,12 @@ function escapeXml(str: string): string {
     .replace(/'/g, "&apos;")
 }
 
-function fontBase64(): string {
-  const fontPath = path.join(process.cwd(), "public", "fonts", "DejaVuSans.ttf")
-  return fs.readFileSync(fontPath).toString("base64")
+function fontFileUrl(): string {
+  return `file://${path.join(process.cwd(), "public", "fonts", "DejaVuSans.ttf")}`
 }
 
-function boldFontBase64(): string {
-  const fontPath = path.join(process.cwd(), "public", "fonts", "DejaVuSans-Bold.ttf")
-  return fs.readFileSync(fontPath).toString("base64")
+function boldFontFileUrl(): string {
+  return `file://${path.join(process.cwd(), "public", "fonts", "DejaVuSans-Bold.ttf")}`
 }
 
 interface SvgElement {
@@ -67,8 +65,6 @@ export async function renderForm(
   const W = meta.width ?? 1224
   const H = meta.height ?? 1584
 
-  const fontB64 = fontBase64()
-  const boldFontB64 = boldFontBase64()
 
   const elements: string[] = []
 
@@ -134,11 +130,11 @@ export async function renderForm(
     <style>
       @font-face {
         font-family: 'DejaVuSans';
-        src: url('data:font/truetype;base64,${fontB64}');
+        src: url('${fontFileUrl()}');
       }
       @font-face {
         font-family: 'DejaVuSansBold';
-        src: url('data:font/truetype;base64,${boldFontB64}');
+        src: url('${boldFontFileUrl()}');
       }
     </style>
   </defs>
