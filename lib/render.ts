@@ -1,4 +1,4 @@
-import sharp from "sharp"
+import { createCanvas, loadImage, GlobalFonts } from "@napi-rs/canvas"
 import * as fs from "fs"
 import * as path from "path"
 import { FIELDS, CIRCLES, COB_ALERT } from "./fields"
@@ -6,67 +6,31 @@ import type { ExtractedFields } from "./extract"
 
 const FONT_SIZE = 18
 const BOX_HEIGHT = 32
-const RED = "rgb(220,0,0)"
-const BLACK = "rgb(0,0,0)"
-const WHITE = "rgb(255,255,255)"
 const CIRCLE_RADIUS = 22
 const CIRCLE_THICKNESS = 3
 
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;")
-}
-
-function fontFileUrl(): string {
-  return `file://${path.join(process.cwd(), "public", "fonts", "DejaVuSans.ttf")}`
-}
-
-function boldFontFileUrl(): string {
-  return `file://${path.join(process.cwd(), "public", "fonts", "DejaVuSans-Bold.ttf")}`
-}
-
-interface SvgElement {
-  svg: string
-}
-
-function whiteRect(x: number, y: number, w: number, h: number): string {
-  return `<rect x="${x}" y="${y - h}" width="${w}" height="${h}" fill="${WHITE}"/>`
-}
-
-function redOutlineRect(x: number, y: number, w: number, h: number): string {
-  return `<rect x="${x}" y="${y - h}" width="${w}" height="${h}" fill="none" stroke="${RED}" stroke-width="2"/>`
-}
-
-function textElement(
-  x: number,
-  y: number,
-  text: string,
-  color: string = BLACK,
-  bold: boolean = false
-): string {
-  const fontFamily = bold ? "DejaVuSansBold" : "DejaVuSans"
-  return `<text x="${x}" y="${y}" font-family="${fontFamily}" font-size="${FONT_SIZE}" fill="${color}" dominant-baseline="auto">${escapeXml(text)}</text>`
-}
-
-function circle(cx: number, cy: number): string {
-  return `<circle cx="${cx}" cy="${cy}" r="${CIRCLE_RADIUS}" fill="none" stroke="${BLACK}" stroke-width="${CIRCLE_THICKNESS}"/>`
+function registerFonts() {
+  const fontsDir = path.join(process.cwd(), "public", "fonts")
+  GlobalFonts.registerFromPath(path.join(fontsDir, "DejaVuSans.ttf"), "DejaVuSans")
+  GlobalFonts.registerFromPath(path.join(fontsDir, "DejaVuSans-Bold.ttf"), "DejaVuSansBold")
 }
 
 export async function renderForm(
   templatePath: string,
   fields: ExtractedFields
 ): Promise<Buffer> {
+  registerFonts()
+
   const templateBuffer = fs.readFileSync(templatePath)
-  const meta = await sharp(templateBuffer).metadata()
-  const W = meta.width ?? 1224
-  const H = meta.height ?? 1584
+  const templateImage = await loadImage(templateBuffer)
+  const W = templateImage.width
+  const H = templateImage.height
 
+  const canvas = createCanvas(W, H)
+  const ctx = canvas.getContext("2d")
 
-  const elements: string[] = []
+  // Draw template
+  ctx.drawImage(templateImage, 0, 0)
 
   // --- Render standard fields ---
   for (const field of FIELDS) {
@@ -75,22 +39,31 @@ export async function renderForm(
     const boxH = field.boxHeight ?? BOX_HEIGHT
 
     if (field.topDown) {
-      // Sealants: top-down multiline starting at (x, y)
+      // Sealants: top-down multiline
       const lines = value.split("\n").filter(Boolean)
-      const startY = field.y + FONT_SIZE
-      elements.push(whiteRect(field.x, field.y + boxH * lines.length + 4, boxW, boxH * lines.length + 8))
+      ctx.fillStyle = "white"
+      ctx.fillRect(field.x, field.y, boxW, lines.length * (FONT_SIZE + 4) + 4)
+      ctx.fillStyle = "black"
+      ctx.font = `${FONT_SIZE}px DejaVuSans`
       lines.forEach((line, i) => {
-        elements.push(textElement(field.x, startY + i * (FONT_SIZE + 2), line))
+        ctx.fillText(line, field.x, field.y + FONT_SIZE + i * (FONT_SIZE + 2))
       })
       continue
     }
 
     if (value === "MISSING") {
-      elements.push(redOutlineRect(field.x, field.y, boxW, boxH))
-      elements.push(textElement(field.x + 2, field.y - 8, "Missing", RED))
+      ctx.strokeStyle = "rgb(220,0,0)"
+      ctx.lineWidth = 2
+      ctx.strokeRect(field.x, field.y - boxH, boxW, boxH)
+      ctx.fillStyle = "rgb(220,0,0)"
+      ctx.font = `${FONT_SIZE}px DejaVuSans`
+      ctx.fillText("Missing", field.x + 2, field.y - 8)
     } else {
-      elements.push(whiteRect(field.x, field.y, boxW, boxH))
-      elements.push(textElement(field.x, field.y - 2, value))
+      ctx.fillStyle = "white"
+      ctx.fillRect(field.x, field.y - boxH, boxW, boxH)
+      ctx.fillStyle = "black"
+      ctx.font = `${FONT_SIZE}px DejaVuSans`
+      ctx.fillText(value, field.x, field.y - 2)
     }
   }
 
@@ -105,61 +78,43 @@ export async function renderForm(
         : "NON DUPLICATION OF BENEFITS!!!"
 
     if (alertText) {
-      const aw = COB_ALERT.x2 - COB_ALERT.x
-      elements.push(textElement(COB_ALERT.x, COB_ALERT.y, alertText, RED, true))
+      ctx.fillStyle = "rgb(220,0,0)"
+      ctx.font = `bold ${FONT_SIZE}px DejaVuSansBold`
+      ctx.fillText(alertText, COB_ALERT.x, COB_ALERT.y)
     }
   }
 
   // --- Night Guard circle ---
+  ctx.strokeStyle = "black"
+  ctx.lineWidth = CIRCLE_THICKNESS
   if (fields.ng_circle === "YES") {
-    elements.push(circle(CIRCLES.ng_yes.cx, CIRCLES.ng_yes.cy))
+    ctx.beginPath()
+    ctx.arc(CIRCLES.ng_yes.cx, CIRCLES.ng_yes.cy, CIRCLE_RADIUS, 0, Math.PI * 2)
+    ctx.stroke()
   } else if (fields.ng_circle === "NO") {
-    elements.push(circle(CIRCLES.ng_no.cx, CIRCLES.ng_no.cy))
+    ctx.beginPath()
+    ctx.arc(CIRCLES.ng_no.cx, CIRCLES.ng_no.cy, CIRCLE_RADIUS, 0, Math.PI * 2)
+    ctx.stroke()
   }
 
   // --- Posterior Comp downgrade circle ---
   if (fields.post_comp_circle === "YES") {
-    elements.push(circle(CIRCLES.post_comp_yes.cx, CIRCLES.post_comp_yes.cy))
+    ctx.beginPath()
+    ctx.arc(CIRCLES.post_comp_yes.cx, CIRCLES.post_comp_yes.cy, CIRCLE_RADIUS, 0, Math.PI * 2)
+    ctx.stroke()
   } else if (fields.post_comp_circle === "NO") {
-    elements.push(circle(CIRCLES.post_comp_no.cx, CIRCLES.post_comp_no.cy))
+    ctx.beginPath()
+    ctx.arc(CIRCLES.post_comp_no.cx, CIRCLES.post_comp_no.cy, CIRCLE_RADIUS, 0, Math.PI * 2)
+    ctx.stroke()
   }
 
-  // --- Build SVG ---
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">
-  <defs>
-    <style>
-      @font-face {
-        font-family: 'DejaVuSans';
-        src: url('${fontFileUrl()}');
-      }
-      @font-face {
-        font-family: 'DejaVuSansBold';
-        src: url('${boldFontFileUrl()}');
-      }
-    </style>
-  </defs>
-  ${elements.join("\n  ")}
-</svg>`
-
-  const svgBuffer = Buffer.from(svg)
-
-  const output = await sharp(templateBuffer)
-    .composite([{ input: svgBuffer, top: 0, left: 0 }])
-    .jpeg({ quality: 95 })
-    .toBuffer()
-
-  return output
+  return canvas.toBuffer("image/jpeg", 95)
 }
 
 export function outputFilename(fields: ExtractedFields): string {
   const date = new Date().toISOString().split("T")[0]
-  const parts = [
-    fields.patient_name,
-    fields.group_number,
-    date,
-  ]
   return (
-    parts
+    [fields.patient_name, fields.group_number, date]
       .join(" ")
       .replace(/[/\\:*?"<>|]/g, "-")
       .replace(/\s+/g, " ")
