@@ -3,6 +3,7 @@
 import { useState, useRef } from "react"
 
 type Status = "idle" | "extracting" | "done" | "error"
+const APP_VERSION = "V1.1"
 
 export default function Home() {
   const [status, setStatus] = useState<Status>("idle")
@@ -87,7 +88,10 @@ export default function Home() {
   const busy = status === "extracting"
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+    <main className="relative min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+      <div className="absolute right-4 top-4 rounded-md border border-gray-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-500 shadow-sm">
+        {APP_VERSION}
+      </div>
       <div className="w-full max-w-lg">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Benefits Form Processor</h1>
