@@ -133,7 +133,7 @@ freq_fmx_pano: PROCEDURE CODES → D0210 + D0330 frequencies. Convert months to 
 
 freq_fmx_pano_shared: D0210 and D0330 LIMITATIONS → "Shared Freq:". If D0210 references D0330 OR D0330 references D0210 → "YES". If both exist and no shared freq → "NO". If one/both missing → "UNKNOWN".
 
-freq_bwx: PROCEDURE CODES → D0274 → LIMITATIONS. Convert standard month intervals to quantity/months. "2 Visit per 1 Year"→"2/12". "4 Visit per 1 Benefit Period" or "4 Visit per 1 Calendar Year"→"4/Cal Year". "No Frequency Limit"→"Unlimited". Unknown→"Please Review".
+freq_bwx: PROCEDURE CODES → D0274 → LIMITATIONS. Convert standard month intervals to quantity/months. "1 Visit per 1 Benefit Period"→"1/12". "2 Visit per 1 Benefit Period" or "2 Visit per 1 Year"→"2/12". "4 Visit per 1 Benefit Period" or "4 Visit per 1 Calendar Year"→"4/Cal Year". "No Frequency Limit"→"Unlimited". Unknown→"Please Review".
 
 freq_prob_d140: PROCEDURE CODES → D0140 → LIMITATIONS. Standard freq conversions apply. Special: "With no other services"→"No Other Svcs", "Emergency only"→"Emergency Only", "Separate date of service required"→"Separate DOS". If both freq and restriction: combine, e.g. "2/12 + No Other Svcs". Missing→"Please Review".
 

@@ -11,13 +11,16 @@ export interface FieldDef {
   bold?: boolean
   color?: string // default black
   topDown?: boolean // special rendering for sealants
+  maxLines?: number
+  maxFontSize?: number
+  minFontSize?: number
 }
 
 export const FIELDS: FieldDef[] = [
   // Header / admin
-  { key: "payor",                x: 837,  y: 145,  x2: 1087 },
+  { key: "payor",                x: 837,  y: 145,  x2: 1087, boxHeight: 44, maxLines: 2, maxFontSize: 21, minFontSize: 14 },
   { key: "group_number",         x: 133,  y: 252,  x2: 336  },
-  { key: "group_name",           x: 522,  y: 253,  x2: 822  },
+  { key: "group_name",           x: 522,  y: 253,  x2: 822, boxHeight: 36, maxLines: 2, minFontSize: 12 },
   { key: "claims_paying_id",     x: 942,  y: 252,  x2: 1152 },
   { key: "effective_date",       x: 916,  y: 356,  x2: 1146 },
   { key: "patient_name",         x: 112,  y: 424,  x2: 417  },

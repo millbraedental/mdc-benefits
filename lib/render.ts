@@ -9,6 +9,51 @@ const BOX_HEIGHT = 32
 const CIRCLE_RADIUS = 22
 const CIRCLE_THICKNESS = 3
 
+function wrapText(
+  ctx: ReturnType<ReturnType<typeof createCanvas>["getContext"]>,
+  text: string,
+  maxWidth: number
+): string[] {
+  const words = text.trim().split(/\s+/).filter(Boolean)
+  const lines: string[] = []
+
+  for (const word of words) {
+    const candidate = lines.length === 0 ? word : `${lines[lines.length - 1]} ${word}`
+    if (lines.length === 0 || ctx.measureText(candidate).width <= maxWidth) {
+      if (lines.length === 0) lines.push(word)
+      else lines[lines.length - 1] = candidate
+    } else {
+      lines.push(word)
+    }
+  }
+
+  return lines
+}
+
+function fitWrappedText(
+  ctx: ReturnType<ReturnType<typeof createCanvas>["getContext"]>,
+  text: string,
+  maxWidth: number,
+  maxLines: number,
+  maxFontSize: number,
+  minFontSize: number
+): { fontSize: number; lines: string[] } {
+  for (let fontSize = maxFontSize; fontSize >= minFontSize; fontSize--) {
+    ctx.font = `${fontSize}px DejaVuSans`
+    const lines = wrapText(ctx, text, maxWidth)
+    if (lines.length <= maxLines) return { fontSize, lines }
+  }
+
+  ctx.font = `${minFontSize}px DejaVuSans`
+  const lines = wrapText(ctx, text, maxWidth).slice(0, maxLines)
+  let lastLine = lines[maxLines - 1] ?? ""
+  while (lastLine && ctx.measureText(`${lastLine}…`).width > maxWidth) {
+    lastLine = lastLine.slice(0, -1).trimEnd()
+  }
+  lines[maxLines - 1] = `${lastLine}…`
+  return { fontSize: minFontSize, lines }
+}
+
 function registerFonts() {
   const fontsDir = path.join(process.cwd(), "public", "fonts")
   GlobalFonts.registerFromPath(path.join(fontsDir, "DejaVuSans.ttf"), "DejaVuSans")
@@ -71,11 +116,31 @@ export async function renderForm(
       ctx.font = `${FONT_SIZE}px DejaVuSans`
       ctx.fillText("Missing", field.x + 2, field.y - 8)
     } else {
-      ctx.fillStyle = "white"
-      ctx.fillRect(field.x, field.y - boxH, boxW, boxH)
       ctx.fillStyle = "black"
-      ctx.font = `${FONT_SIZE}px DejaVuSans`
-      ctx.fillText(value, field.x, field.y - 2)
+      if (field.maxLines && field.maxLines > 1) {
+        const horizontalPadding = 2
+        const maxFontSize = Math.min(
+          field.maxFontSize ?? FONT_SIZE,
+          Math.floor((boxH - 2) / field.maxLines) - 1
+        )
+        const fitted = fitWrappedText(
+          ctx,
+          value,
+          boxW - horizontalPadding * 2,
+          field.maxLines,
+          maxFontSize,
+          field.minFontSize ?? 12
+        )
+        const lineHeight = fitted.fontSize + 1
+        const totalHeight = fitted.lines.length * lineHeight
+        const firstBaseline = field.y - (boxH - totalHeight) / 2 - totalHeight + fitted.fontSize
+        fitted.lines.forEach((line, index) => {
+          ctx.fillText(line, field.x + horizontalPadding, firstBaseline + index * lineHeight)
+        })
+      } else {
+        ctx.font = `${FONT_SIZE}px DejaVuSans`
+        ctx.fillText(value, field.x, field.y - 2)
+      }
     }
   }
 
