@@ -96,7 +96,7 @@ export const FIELDS: FieldDef[] = [
   { key: "freq_bridge",          x: 348,  y: 1429, x2: 490  },
   { key: "freq_denture",         x: 615,  y: 1429, x2: 757  },
   { key: "freq_composite",       x: 856,  y: 1429, x2: 973  },
-  { key: "freq_fluoride",        x: 1077, y: 1429, x2: 1195 },
+  { key: "freq_fluoride",        x: 1077, y: 1429, x2: 1195, maxLines: 2, maxFontSize: 18, minFontSize: 12 },
 
   // Frequency row 2
   { key: "freq_exam_prophy",     x: 111,  y: 1474, x2: 466  },
@@ -106,7 +106,7 @@ export const FIELDS: FieldDef[] = [
 
   // Frequency row 3
   { key: "freq_prob_d140",       x: 141,  y: 1521, x2: 336  },
-  { key: "freq_srp",             x: 417,  y: 1513, x2: 876  },
+  { key: "freq_srp",             x: 417,  y: 1527, x2: 876  },
 ]
 
 // Circle definitions for Yes/No toggle fields

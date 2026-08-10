@@ -176,13 +176,16 @@ export async function renderForm(
     ctx.arc(CIRCLES.ng_yes.cx, CIRCLES.ng_yes.cy, CIRCLE_RADIUS, 0, Math.PI * 2)
     ctx.stroke()
   } else if (fields.ng_circle === "NO") {
+    ctx.strokeStyle = "rgb(220,0,0)"
     ctx.beginPath()
     ctx.arc(CIRCLES.ng_no.cx, CIRCLES.ng_no.cy, CIRCLE_RADIUS, 0, Math.PI * 2)
     ctx.stroke()
   }
 
   // --- Posterior Comp downgrade circle ---
+  ctx.strokeStyle = "black"
   if (fields.post_comp_circle === "YES") {
+    ctx.strokeStyle = "rgb(220,0,0)"
     ctx.beginPath()
     ctx.arc(CIRCLES.post_comp_yes.cx, CIRCLES.post_comp_yes.cy, CIRCLE_RADIUS, 0, Math.PI * 2)
     ctx.stroke()
