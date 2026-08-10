@@ -15,9 +15,14 @@ export interface FieldDef {
 
 export const FIELDS: FieldDef[] = [
   // Header / admin
+  { key: "payor",                x: 837,  y: 145,  x2: 1087 },
   { key: "group_number",         x: 133,  y: 252,  x2: 336  },
+  { key: "group_name",           x: 522,  y: 253,  x2: 822  },
+  { key: "claims_paying_id",     x: 942,  y: 252,  x2: 1152 },
   { key: "effective_date",       x: 916,  y: 356,  x2: 1146 },
   { key: "patient_name",         x: 112,  y: 424,  x2: 417  },
+  { key: "patient_id",           x: 480,  y: 423,  x2: 688  },
+  { key: "patient_dob",          x: 763,  y: 423,  x2: 898  },
   { key: "subscriber_name",      x: 145,  y: 471,  x2: 351  },
 
   // History
@@ -38,7 +43,7 @@ export const FIELDS: FieldDef[] = [
   { key: "ortho_pct",            x: 1078, y: 936,  x2: 1125 },
 
   // Sealants (special top-down multiline)
-  { key: "sealants",             x: 930,  y: 948,  x2: 1186, topDown: true },
+  { key: "sealants",             x: 930,  y: 944,  x2: 1186, topDown: true },
 
   // Classifications row
   { key: "prev_pct",             x: 87,   y: 948,  x2: 142  },
@@ -112,3 +117,6 @@ export const CIRCLES = {
 
 // COB alert text placement
 export const COB_ALERT = { x: 658, y: 65, x2: 1131 }
+
+// REV22 special red text-only overlay
+export const DPO_CAP = { x: 408, y: 1344, x2: 540 }

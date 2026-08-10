@@ -1,7 +1,7 @@
 import { createCanvas, loadImage, GlobalFonts } from "@napi-rs/canvas"
 import * as fs from "fs"
 import * as path from "path"
-import { FIELDS, CIRCLES, COB_ALERT } from "./fields"
+import { FIELDS, CIRCLES, COB_ALERT, DPO_CAP } from "./fields"
 import type { ExtractedFields } from "./extract"
 
 const FONT_SIZE = 18
@@ -39,14 +39,26 @@ export async function renderForm(
     const boxH = field.boxHeight ?? BOX_HEIGHT
 
     if (field.topDown) {
-      // Sealants: top-down multiline
-      const lines = value.split("\n").filter(Boolean)
-      ctx.fillStyle = "white"
-      ctx.fillRect(field.x, field.y, boxW, lines.length * (FONT_SIZE + 4) + 4)
+      // REV22 Sealants: transparent top-down multiline, ending above Y=1020.
+      const sourceLines = value.split("\n").map((line) => line.trim()).filter(Boolean)
+      let fontSize = FONT_SIZE
+      let lines = sourceLines
+      const boundaryY = 1020
+      const lineSpacing = 16
+
+      if (field.y + fontSize + Math.max(0, lines.length - 1) * lineSpacing > boundaryY) {
+        fontSize = 16
+      }
+
+      const maxLines = Math.floor((boundaryY - field.y - fontSize) / lineSpacing) + 1
+      if (lines.length > maxLines) {
+        lines = lines.slice(0, Math.max(1, maxLines))
+      }
+
       ctx.fillStyle = "black"
-      ctx.font = `${FONT_SIZE}px DejaVuSans`
+      ctx.font = `${fontSize}px DejaVuSans`
       lines.forEach((line, i) => {
-        ctx.fillText(line, field.x, field.y + FONT_SIZE + i * (FONT_SIZE + 2))
+        ctx.fillText(line, field.x, field.y + fontSize + i * lineSpacing)
       })
       continue
     }
@@ -68,20 +80,27 @@ export async function renderForm(
   }
 
   // --- COB Alert ---
-  const cob = fields.cob
-  if (cob && cob !== "MISSING") {
+  const cob = fields.cob?.trim()
+  {
     const alertText =
       cob === "Standard"
         ? null
-        : cob.trim() === "" || cob === "REVIEW"
-        ? "COB-UNKNOWN"
-        : "NON DUPLICATION OF BENEFITS!!!"
+        : !cob || cob === "MISSING" || cob === "REVIEW"
+          ? "COB-UNKNOWN"
+          : "NON DUPLICATION OF BENEFITS!!!"
 
     if (alertText) {
       ctx.fillStyle = "rgb(220,0,0)"
       ctx.font = `bold ${FONT_SIZE}px DejaVuSansBold`
       ctx.fillText(alertText, COB_ALERT.x, COB_ALERT.y)
     }
+  }
+
+  // --- DPO-CAP special text-only overlay ---
+  if (fields.dpo_cap === "DPO-CAP") {
+    ctx.fillStyle = "rgb(220,0,0)"
+    ctx.font = `bold ${FONT_SIZE}px DejaVuSansBold`
+    ctx.fillText("DPO-CAP", DPO_CAP.x, DPO_CAP.y - 2)
   }
 
   // --- Night Guard circle ---
@@ -113,8 +132,10 @@ export async function renderForm(
 
 export function outputFilename(fields: ExtractedFields): string {
   const date = new Date().toISOString().split("T")[0]
+  const groupNumber = fields.group_number === "MISSING" ? "UNKNOWN GROUP NUMBER" : fields.group_number
+  const groupName = fields.group_name === "MISSING" ? "UNKNOWN GROUP NAME" : fields.group_name
   return (
-    [fields.patient_name, fields.group_number, date]
+    [fields.patient_name, groupNumber, groupName, date]
       .join(" ")
       .replace(/[/\\:*?"<>|]/g, "-")
       .replace(/\s+/g, " ")

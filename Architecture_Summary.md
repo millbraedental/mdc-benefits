@@ -2,7 +2,7 @@
 
 ## What This Tool Does
 
-Given a dental insurance benefits breakdown PDF (from the Stratus verification platform), this tool automatically extracts 45+ data fields and overlays them onto a standardized internal benefits form — producing a completed, consistently formatted output image. The process takes seconds and requires no manual data entry.
+Given one or more dental insurance benefits breakdown PDFs (from the Stratus verification platform), this tool automatically extracts 60+ data fields and overlays them onto a standardized internal benefits form — producing a completed, consistently formatted output image. A Full breakdown is primary; an optional Basic breakdown is used for confirmation and fallback.
 
 ---
 
@@ -16,12 +16,12 @@ A common concern with AI-powered document tools is that the AI controls the fina
 
 ## Two Completely Separate Stages
 
-### Stage 1 — Extraction (AI / Claude API)
+### Stage 1 — Extraction (AI / OpenAI Responses API)
 The AI reads the input PDF and outputs a structured JSON object containing every required field value:
 ```json
 { "effective_date": "01-JAN-26", "max": "$2,000", "cob": "Standard", ... }
 ```
-This is where AI variability lives — but it is tightly controlled (see mitigations below).
+This is where AI variability lives — but it is tightly controlled through a strict output schema, REV22 normalization rules, and a review-required gate for unresolved conflicts.
 
 ### Stage 2 — Rendering (Deterministic Code)
 The JSON from Stage 1 is passed to standard image-processing code — no AI involved. Each field is placed at a hardcoded pixel coordinate on the blank form template. Given identical JSON input, this stage produces an identical image every single time.
@@ -35,7 +35,7 @@ The JSON from Stage 1 is passed to standard image-processing code — no AI invo
 | AI changes structure of response | JSON schema enforced output — the AI cannot deviate from the required shape |
 | AI hallucinates a value | Temperature set to 0 — fully deterministic sampling, no creativity |
 | AI skips a field | Schema requires every field present; missing values output an explicit `MISSING` token |
-| AI misreads a table value | Validation layer checks formats (e.g. `DD-MMM-YY`, `$X,XXX`, `XX%`) before rendering — malformed values are flagged and blocked |
+| AI misreads a table value | Validation checks key formats before rendering; malformed values and unresolved Full/Basic conflicts are blocked for review |
 | Inconsistency across runs | Same system prompt + same schema + temperature 0 = same output for same input |
 
 ---
@@ -45,7 +45,7 @@ The JSON from Stage 1 is passed to standard image-processing code — no AI invo
 | Layer | Tool | Why |
 |---|---|---|
 | Frontend / Hosting | Next.js on Vercel | Simple upload UI; no infrastructure to manage |
-| AI Extraction | Anthropic Claude API | Native PDF input; structured JSON output mode |
+| AI Extraction | OpenAI Responses API | Native PDF input; strict structured JSON output |
 | Image Rendering | Sharp + SVG (Node.js) | Pixel-precise text and shape placement; no dependency issues on Vercel |
 | Font | DejaVuSans (bundled) | Matches form spec exactly; no install required |
 
