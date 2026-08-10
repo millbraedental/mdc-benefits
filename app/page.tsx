@@ -10,6 +10,7 @@ export default function Home() {
   const [resultUrl, setResultUrl] = useState("")
   const [filename, setFilename] = useState("")
   const [costUsd, setCostUsd] = useState<number | null>(null)
+  const [passcode, setPasscode] = useState("")
   const [fullFile, setFullFile] = useState<File | null>(null)
   const [basicFile, setBasicFile] = useState<File | null>(null)
   const [dragOver, setDragOver] = useState<"full" | "basic" | null>(null)
@@ -42,6 +43,7 @@ export default function Home() {
     setCostUsd(null)
 
     const formData = new FormData()
+    formData.append("passcode", passcode)
     formData.append("full_pdf", fullFile)
     if (basicFile) formData.append("basic_pdf", basicFile)
 
@@ -136,10 +138,26 @@ export default function Home() {
             )
           })}
 
+          <div>
+            <label htmlFor="passcode" className="mb-2 block text-sm font-semibold text-gray-800">
+              Passcode
+            </label>
+            <input
+              id="passcode"
+              type="password"
+              value={passcode}
+              onChange={(event) => setPasscode(event.target.value)}
+              autoComplete="current-password"
+              disabled={busy}
+              placeholder="Enter passcode"
+              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+          </div>
+
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={busy || !fullFile}
+            disabled={busy || !fullFile || !passcode}
             className="flex w-full items-center justify-center rounded-lg bg-blue-600 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {busy ? (

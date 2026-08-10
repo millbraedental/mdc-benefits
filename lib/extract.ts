@@ -5,14 +5,16 @@ const client = new OpenAI()
 const SYSTEM_PROMPT = `You are a dental insurance benefits data extractor implementing MASTER_BREAKDOWN_SCRIPT_REV22. You will receive one or more dental benefits breakdowns from the Stratus verification platform. Inspect every uploaded document before finalizing values. Extract every field exactly as specified below and return a single JSON object. Do not paraphrase, infer, or assume values. Extract exactly what appears in the source document, then apply the formatting rules.
 
 DOCUMENT PRIORITY:
-- Use the FULL breakdown as the primary source when it contains the complete current Stratus table-based format.
-- Use the BASIC breakdown only as secondary confirmation, fallback when FULL is missing a field, or comparison when FULL and BASIC conflict.
+- The FULL breakdown is authoritative for every field.
+- Use the BASIC breakdown only as a fallback when the corresponding value is absent from FULL.
+- When FULL and BASIC differ, always use the FULL value. A difference between FULL and BASIC is expected and must never, by itself, set review_required=true or add a review reason.
+- Never replace, merge, average, or reconcile a value present in FULL with a value from BASIC. This applies to all sections and columns, including network level, deductibles, coverage percentages, DED Applies, and Max Applies.
 - Use IN NETWORK / PREMIER values when FULL identifies that as the active benefit section.
 - Never mix PPO, Premier, and Out of Network values unless a field rule explicitly requires comparison.
 - Prefer specific CDT procedure-code rows for CDT percentages, deductibles, frequency, shared frequency, downgrades, pre-auth, and limitations.
 - Use CLASSIFICATIONS for broad Preventive/Basic/Major percentages, waiting periods, and classification-level Max Applies. Use CODE CATEGORIES only as fallback when CLASSIFICATIONS is incomplete.
 - Use TREATMENT HISTORY only for last-service dates.
-- If FULL and BASIC contain a material unresolved conflict, set review_required=true and explain each conflict in review_reasons. Do not guess.
+- Request review only for an ambiguity or internal contradiction that remains within the authoritative FULL breakdown after applying all field-specific rules. BASIC/FULL discrepancies are not review conditions.
 
 EXECUTION MODE: STEPWISE
 Extract exactly what appears in the source. Apply field-specific formatting only after harvesting.
@@ -153,8 +155,8 @@ REV22 FREQUENCY EXPANSIONS:
 - Crown, bridge, and denture year intervals output as compact "8YR", "10YR", etc.; missing/unrecognized→"UNKNOWN".
 
 RENDERING/REVIEW METADATA:
-review_required: true only when source documents materially conflict or an ambiguity cannot be resolved under these rules. Otherwise false.
-review_reasons: concise descriptions of every unresolved conflict or ambiguity. Use an empty array when review_required=false.
+review_required: true only when the authoritative FULL breakdown contains an internal contradiction or ambiguity that cannot be resolved under these rules. Differences between FULL and BASIC never require review. Otherwise false.
+review_reasons: concise descriptions of every unresolved ambiguity within FULL. Do not mention BASIC/FULL discrepancies. Use an empty array when review_required=false.
 
 The active boilerplate and output are 1224×1584 pixels at 72 DPI. The outdated REV22 reference to 300 DPI must not be applied.
 
@@ -330,6 +332,10 @@ export class ReviewRequiredError extends Error {
   }
 }
 
+function isFullBasicDiscrepancy(reason: string): boolean {
+  return /\bfull\b[\s\S]*\bbasic\b|\bbasic\b[\s\S]*\bfull\b/i.test(reason)
+}
+
 const MODEL_PRICING: Record<string, { input: number; cached: number; output: number }> = {
   "gpt-5.6": { input: 5, cached: 0.5, output: 30 },
   "gpt-5.6-sol": { input: 5, cached: 0.5, output: 30 },
@@ -444,9 +450,13 @@ export async function extractFields(
   const fields = JSON.parse(response.output_text) as ExtractedFields
   const cost = estimateCost(model, response.usage)
   const validationReasons = validateExtractedFields(fields)
-  const reviewReasons = [...fields.review_reasons, ...validationReasons]
+  const modelReviewReasons = fields.review_reasons.filter(
+    (reason) => !isFullBasicDiscrepancy(reason)
+  )
+  const reviewReasons = [...modelReviewReasons, ...validationReasons]
+  const unexplainedModelReview = fields.review_required && fields.review_reasons.length === 0
 
-  if (fields.review_required || reviewReasons.length > 0) {
+  if (unexplainedModelReview || reviewReasons.length > 0) {
     throw new ReviewRequiredError(
       reviewReasons.length ? reviewReasons : ["The extraction requires manual review."],
       cost

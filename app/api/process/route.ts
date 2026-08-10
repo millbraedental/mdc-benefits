@@ -1,13 +1,35 @@
 import { NextRequest, NextResponse } from "next/server"
+import { timingSafeEqual } from "crypto"
 import * as path from "path"
 import { extractFields, ReviewRequiredError } from "@/lib/extract"
 import { renderForm, outputFilename } from "@/lib/render"
 
 export const maxDuration = 120
 
+function passcodesMatch(provided: string, expected: string): boolean {
+  const providedBuffer = Buffer.from(provided)
+  const expectedBuffer = Buffer.from(expected)
+  return providedBuffer.length === expectedBuffer.length
+    && timingSafeEqual(providedBuffer, expectedBuffer)
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
+    const expectedPasscode = process.env.BENEFITS_PASSCODE
+    const providedPasscode = formData.get("passcode")
+
+    if (!expectedPasscode) {
+      return NextResponse.json(
+        { error: "Processing is unavailable because the server passcode is not configured." },
+        { status: 503 }
+      )
+    }
+
+    if (typeof providedPasscode !== "string" || !passcodesMatch(providedPasscode, expectedPasscode)) {
+      return NextResponse.json({ error: "Incorrect passcode." }, { status: 401 })
+    }
+
     const fullFile = formData.get("full_pdf")
     const basicFile = formData.get("basic_pdf")
 
