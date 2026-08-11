@@ -19,7 +19,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.5"
+const APP_VERSION = "V1.6"
 
 export default function Home() {
   const [status, setStatus] = useState<Status>("idle")

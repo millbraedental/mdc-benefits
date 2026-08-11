@@ -57,7 +57,7 @@ export const FIELDS: FieldDef[] = [
   { key: "major_ded",            x: 769,  y: 948,  x2: 805  },
 
   // Prev apply max
-  { key: "prev_apply_max",       x: 211,  y: 1060, x2: 283  },
+  { key: "prev_apply_max",       x: 211,  y: 1076, x2: 283  },
 
   // Procedure codes row 1
   { key: "fmx_pct",              x: 93,   y: 1011, x2: 136  },
