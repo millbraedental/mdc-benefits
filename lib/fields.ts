@@ -32,7 +32,7 @@ export const FIELDS: FieldDef[] = [
   { key: "last_bwx",             x: 141,  y: 588,  x2: 281  },
   { key: "last_fmx",             x: 413,  y: 588,  x2: 576  },
   { key: "last_pano",            x: 719,  y: 588,  x2: 867  },
-  { key: "last_ex_px",           x: 1000, y: 588,  x2: 1162 },
+  { key: "last_ex_px",           x: 1000, y: 588,  x2: 1162, maxLines: 2, maxFontSize: 18, minFontSize: 12 },
 
   // Coverage summary row
   { key: "cal_or_contract_year", x: 250,  y: 823,  x2: 453  },

@@ -36,7 +36,7 @@ subscriber_name: If PATIENT full name matches SUBSCRIBER full name → "Patient"
 
 group_number: PLAN INFORMATION → Group Number (not Policy ID, not Group Name)
 
-effective_date: PLAN INFORMATION → Current Effective Date (not Original, not Renewal). Format: DD-MMM-YY.
+effective_date: PLAN INFORMATION → Original Effective Date. If Original Effective Date is missing, fall back to Current Effective Date. Never use Renewal Date. Format: DD-MMM-YY.
 
 last_bwx: TREATMENT HISTORY → D0274 → most recent date. If no history or D0274 missing → "Auth". Format: DD-MMM-YY or Auth.
 
