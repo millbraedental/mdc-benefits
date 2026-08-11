@@ -101,7 +101,7 @@ ng_circle: If ng_value is a percentage → "YES". If ng_value is "NO" → "NO".
 
 post_comp_pct: PROCEDURE CODES → D2330 (fallback D2335) → % column. If 0, 0%, "–", N/A → "NO". Otherwise XX%.
 post_comp_downgrade: D2330 (fallback D2335) → TREATMENT DETAILS/LIMITATIONS → "Downgrades:". If "Downgrades: None" or no downgrade info → "No". If has downgrade code → "Yes".
-post_comp_circle: "YES" if post_comp_downgrade is Yes, "NO" if No.
+post_comp_circle: "AMAL" if post_comp_downgrade is Yes, "YES" if post_comp_downgrade is No.
 
 crown_pct: PROCEDURE CODES → D2740 → % column. Format: XX%.
 

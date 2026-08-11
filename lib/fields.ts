@@ -115,8 +115,8 @@ export const FIELDS: FieldDef[] = [
 export const CIRCLES = {
   ng_yes:        { cx: 991,  cy: 1056 },
   ng_no:         { cx: 1045, cy: 1056 },
-  post_comp_yes: { cx: 298,  cy: 1152 },
-  post_comp_no:  { cx: 237,  cy: 1152 },
+  post_comp_amalgam: { cx: 298, cy: 1152 },
+  post_comp_yes:     { cx: 237, cy: 1152 },
 }
 
 // COB alert text placement
