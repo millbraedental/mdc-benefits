@@ -87,12 +87,17 @@ export async function renderForm(
       // REV22 Sealants: transparent top-down multiline, ending above Y=1020.
       const sourceLines = value.split("\n").map((line) => line.trim()).filter(Boolean)
       let fontSize = FONT_SIZE
-      let lines = sourceLines
       const boundaryY = 1020
       const lineSpacing = 16
+      const wrapSourceLines = () => sourceLines.flatMap((line) => wrapText(ctx, line, boxW))
+
+      ctx.font = `${fontSize}px DejaVuSans`
+      let lines = wrapSourceLines()
 
       if (field.y + fontSize + Math.max(0, lines.length - 1) * lineSpacing > boundaryY) {
         fontSize = 16
+        ctx.font = `${fontSize}px DejaVuSans`
+        lines = wrapSourceLines()
       }
 
       const maxLines = Math.floor((boundaryY - field.y - fontSize) / lineSpacing) + 1
