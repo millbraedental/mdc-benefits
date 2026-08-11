@@ -1,7 +1,7 @@
 import { createCanvas, loadImage, GlobalFonts } from "@napi-rs/canvas"
 import * as fs from "fs"
 import * as path from "path"
-import { FIELDS, CIRCLES, COB_ALERT, DPO_CAP } from "./fields"
+import { FIELDS, CIRCLES, COB_ALERT } from "./fields"
 import type { ExtractedFields } from "./extract"
 
 const FONT_SIZE = 18
@@ -116,7 +116,10 @@ export async function renderForm(
       ctx.font = `${FONT_SIZE}px DejaVuSans`
       ctx.fillText("Missing", field.x + 2, field.y - 8)
     } else {
-      ctx.fillStyle = "black"
+      const redFeeSchedules = new Set(["DPO-CAP", "LOW-FEE", "AUTH"])
+      ctx.fillStyle = field.key === "fee_schedule" && redFeeSchedules.has(value.trim().toUpperCase())
+        ? "rgb(220,0,0)"
+        : "black"
       if (field.maxLines && field.maxLines > 1) {
         const horizontalPadding = 2
         const maxFontSize = Math.min(
@@ -159,13 +162,6 @@ export async function renderForm(
       ctx.font = `bold ${FONT_SIZE}px DejaVuSansBold`
       ctx.fillText(alertText, COB_ALERT.x, COB_ALERT.y)
     }
-  }
-
-  // --- DPO-CAP special text-only overlay ---
-  if (fields.dpo_cap === "DPO-CAP") {
-    ctx.fillStyle = "rgb(220,0,0)"
-    ctx.font = `bold ${FONT_SIZE}px DejaVuSansBold`
-    ctx.fillText("DPO-CAP", DPO_CAP.x, DPO_CAP.y - 2)
   }
 
   // --- Night Guard circle ---

@@ -90,6 +90,7 @@ export const FIELDS: FieldDef[] = [
 
   // Assignment of benefits
   { key: "assignment_of_benefits", x: 792, y: 1344, x2: 928 },
+  { key: "fee_schedule",         x: 408,  y: 1344, x2: 540, maxLines: 2, maxFontSize: 18, minFontSize: 12 },
 
   // Frequency row 1
   { key: "freq_crown",           x: 108,  y: 1429, x2: 240  },
@@ -120,6 +121,3 @@ export const CIRCLES = {
 
 // COB alert text placement
 export const COB_ALERT = { x: 658, y: 65, x2: 1131 }
-
-// REV22 special red text-only overlay
-export const DPO_CAP = { x: 408, y: 1344, x2: 540 }

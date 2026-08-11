@@ -147,7 +147,7 @@ patient_dob: PATIENT → DOB (fallback Date of Birth). Patient DOB only. Format 
 claims_paying_id: PAYER DETAILS → Claims Paying ID (fallback Payer ID). Then NOTES → PAYOR ID/PAYER ID. Preserve exact value. Missing→"N/A".
 payor: PAYER DETAILS → Payer Name. Copy exactly. Missing→"MISSING".
 group_name: PLAN INFORMATION → Group Name. Do not use Group Number, Plan Number, Policy ID, or employer address. Copy exactly. Missing→"MISSING".
-dpo_cap: Search the entire breakdown for explicit wording that Premier Providers are reimbursed at the PPO or DPO schedule/fees. Positive explicit match→"DPO-CAP". Otherwise→empty string. Do not trigger merely because Premier or out-of-network costs are higher or reimbursement levels differ.
+fee_schedule: NETWORK COVERAGE → Fee Schedule. Trim surrounding whitespace and compare case-insensitively. If the value is exactly "DELTA DENTAL PREMIER" or "PREMIER", output "PREMIER" and do not request review. For every other value, including blank, missing, or "–", set this field to "Please Review", set review_required=true, and add a review_conflicts item for field_key "fee_schedule". Label it "Fee Schedule"; include the exact Stratus Fee Schedule wording in source_details; and provide these normalized options in this order: "DPO-CAP", "UCR", "LOW-FEE", "HIGH-FEE", "AUTH". The user interface supplies the additional custom-value option.
 
 REV22 FREQUENCY EXPANSIONS:
 - Fluoride supports Benefit Period: 1 Visit→"1/Benefit Period", 2 Visit→"2/Benefit Period"; 24/36/48/60 Month→"1/2YR", "1/3YR", "1/4YR", "1/5YR".
@@ -172,7 +172,7 @@ export interface ExtractedFields {
   group_number: string
   group_name: string
   claims_paying_id: string
-  dpo_cap: string
+  fee_schedule: string
   effective_date: string
   last_bwx: string
   last_fmx: string
@@ -249,7 +249,7 @@ export const FIELD_KEYS = [
   "group_number",
   "group_name",
   "claims_paying_id",
-  "dpo_cap",
+  "fee_schedule",
   "effective_date",
   "last_bwx",
   "last_fmx",
