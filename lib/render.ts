@@ -39,12 +39,12 @@ function fitWrappedText(
   minFontSize: number
 ): { fontSize: number; lines: string[] } {
   for (let fontSize = maxFontSize; fontSize >= minFontSize; fontSize--) {
-    ctx.font = `${fontSize}px DejaVuSans`
+    ctx.font = `${fontSize}px DejaVuSansBold`
     const lines = wrapText(ctx, text, maxWidth)
     if (lines.length <= maxLines) return { fontSize, lines }
   }
 
-  ctx.font = `${minFontSize}px DejaVuSans`
+  ctx.font = `${minFontSize}px DejaVuSansBold`
   const lines = wrapText(ctx, text, maxWidth).slice(0, maxLines)
   let lastLine = lines[maxLines - 1] ?? ""
   while (lastLine && ctx.measureText(`${lastLine}…`).width > maxWidth) {
@@ -101,7 +101,7 @@ export async function renderForm(
       }
 
       ctx.fillStyle = "black"
-      ctx.font = `${fontSize}px DejaVuSans`
+      ctx.font = `${fontSize}px DejaVuSansBold`
       lines.forEach((line, i) => {
         ctx.fillText(line, field.x, field.y + fontSize + i * lineSpacing)
       })
@@ -141,7 +141,7 @@ export async function renderForm(
           ctx.fillText(line, field.x + horizontalPadding, firstBaseline + index * lineHeight)
         })
       } else {
-        ctx.font = `${FONT_SIZE}px DejaVuSans`
+        ctx.font = `${FONT_SIZE}px DejaVuSansBold`
         ctx.fillText(value, field.x, field.y - 2)
       }
     }
