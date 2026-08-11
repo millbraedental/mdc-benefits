@@ -180,12 +180,13 @@ export async function renderForm(
 
   // --- Posterior Comp downgrade circle ---
   ctx.strokeStyle = "black"
-  if (fields.post_comp_circle === "AMAL") {
+  const posteriorDowngrade = fields.post_comp_downgrade?.trim().toUpperCase()
+  if (posteriorDowngrade === "YES") {
     ctx.strokeStyle = "rgb(220,0,0)"
     ctx.beginPath()
     ctx.arc(CIRCLES.post_comp_amalgam.cx, CIRCLES.post_comp_amalgam.cy, CIRCLE_RADIUS, 0, Math.PI * 2)
     ctx.stroke()
-  } else if (fields.post_comp_circle === "YES") {
+  } else if (posteriorDowngrade === "NO") {
     ctx.beginPath()
     ctx.arc(CIRCLES.post_comp_yes.cx, CIRCLES.post_comp_yes.cy, CIRCLE_RADIUS, 0, Math.PI * 2)
     ctx.stroke()

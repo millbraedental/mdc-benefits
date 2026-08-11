@@ -19,7 +19,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.7"
+const APP_VERSION = "V1.8"
 
 export default function Home() {
   const [status, setStatus] = useState<Status>("idle")
@@ -209,7 +209,7 @@ export default function Home() {
                   onDrop={(e) => onDrop(e, role)}
                   className={[
                     "border-2 border-dashed rounded-xl p-7 text-center cursor-pointer transition-colors",
-                    dragOver === role ? "border-blue-400 bg-blue-50" : "border-gray-300 bg-white hover:border-gray-400",
+                    dragOver === role ? "border-green-500 bg-green-50 ring-2 ring-green-200" : "border-gray-300 bg-white hover:border-gray-400",
                     busy ? "opacity-50 cursor-not-allowed" : "",
                   ].join(" ")}
                 >
