@@ -19,7 +19,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.2"
+const APP_VERSION = "V1.3"
 
 export default function Home() {
   const [status, setStatus] = useState<Status>("idle")
@@ -194,14 +194,13 @@ export default function Home() {
           {(["full", "basic"] as const).map((role) => {
             const selectedFile = role === "full" ? fullFile : basicFile
             const inputRef = role === "full" ? fullInputRef : basicInputRef
-            const label = role === "full" ? "Full Breakdown" : "Basic Breakdown"
-            const requirement = role === "full" ? "Required" : "Not required"
+            const label = role === "full" ? "Full Breakdown" : "Basic Breakdown (Not Required)"
 
             return (
               <div key={role}>
                 <div className="mb-2 flex items-center justify-between">
                   <label className="text-sm font-semibold text-gray-800">{label}</label>
-                  <span className="text-xs text-gray-400">{requirement}</span>
+                  {role === "full" && <span className="text-xs text-gray-400">Required</span>}
                 </div>
                 <div
                   onClick={() => !busy && inputRef.current?.click()}
