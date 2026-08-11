@@ -28,6 +28,15 @@ GENERAL PARSING:
 - Percentage formatting: XX% — remove spaces, remove decimals (e.g. 100%, 80%)
 - Dollar formatting: $X,XXX — no cents (e.g. $2,000, $1,500)
 
+FREQUENCY SEMANTIC NORMALIZATION:
+- Interpret the meaning of frequency wording; do not require an exact phrase match. The field-specific examples below define output formatting and business meaning, not an exhaustive vocabulary list.
+- Normalize digits and number words, singular/plural differences, punctuation, and equivalent constructions. For example, "once every six months", "one visit in a 6-month period", and "1 Visit per 6 Month" all express quantity=1 in a rolling 6-month interval.
+- Keep rolling month/year intervals, Calendar Year, Contract Year, and Benefit Period semantically distinct. Never convert between these period types unless a field-specific rule explicitly requires it.
+- Age, tooth, arch, quadrant, and shared-frequency qualifiers do not change the frequency interval unless they introduce a genuinely different limitation.
+- If one procedure row contains multiple different frequency meanings, do not guess. Set the affected field to "Please Review" and create a review_conflicts item containing each distinct normalized option and its exact source wording.
+- If the wording is unambiguous, return the normalized value even when its phrasing is not listed verbatim below.
+- Every field containing "Please Review" must have a corresponding review_conflicts item. Never return literal "Please Review" without giving the user a resolution question.
+
 FIELD EXTRACTION RULES:
 
 patient_name: PATIENT section → First Name + " " + Last Name
@@ -135,7 +144,7 @@ freq_fmx_pano: PROCEDURE CODES → D0210 + D0330 frequencies. Convert months to 
 
 freq_fmx_pano_shared: D0210 and D0330 LIMITATIONS → "Shared Freq:". If D0210 references D0330 OR D0330 references D0210 → "YES". If both exist and no shared freq → "NO". If one/both missing → "UNKNOWN".
 
-freq_bwx: PROCEDURE CODES → D0274 → LIMITATIONS. Convert standard month intervals to quantity/months. "1 Visit per 1 Benefit Period"→"1/12". "2 Visit per 1 Benefit Period" or "2 Visit per 1 Year"→"2/12". "4 Visit per 1 Benefit Period" or "4 Visit per 1 Calendar Year"→"4/Cal Year". "No Frequency Limit"→"Unlimited". Unknown→"Please Review".
+freq_bwx: PROCEDURE CODES → D0274 → LIMITATIONS. Convert any unambiguous rolling month interval to quantity/months: for example, "1 Visit per 6 Month"→"1/6", "1 Visit per 12 Month"→"1/12", and "2 Visit per 12 Month"→"2/12". Calendar Year intervals become quantity/Cal Year: "1 Visit per 1 Calendar Year"→"1/Cal Year", "2 Visit per 1 Calendar Year"→"2/Cal Year", and "4 Visit per 1 Calendar Year"→"4/Cal Year". "1 Visit per 1 Benefit Period"→"1/12". "2 Visit per 1 Benefit Period" or "2 Visit per 1 Year"→"2/12". "4 Visit per 1 Benefit Period"→"4/Cal Year". "No Frequency Limit"→"Unlimited". Shared-frequency code lists do not alter the interval. If multiple distinct intervals appear in the D0274 row, create a review_conflicts item for freq_bwx with every normalized option and source phrase. Unknown→"Please Review" plus a review_conflicts item.
 
 freq_prob_d140: PROCEDURE CODES → D0140 → LIMITATIONS. Standard freq conversions apply. Special: "With no other services"→"No Other Svcs", "Emergency only"→"Emergency Only", "Separate date of service required"→"Separate DOS". If both freq and restriction: combine, e.g. "2/12 + No Other Svcs". Missing→"Please Review".
 
@@ -305,6 +314,14 @@ export const FIELD_KEYS = [
   "freq_prob_d140",
   "freq_srp",
 ] as const satisfies readonly (keyof ExtractedFields)[]
+
+const REVIEW_LABELS: Partial<Record<(typeof FIELD_KEYS)[number], string>> = {
+  freq_bwx: "D0274 Adult Bitewings Frequency",
+  freq_exam_prophy: "Exam and Prophy Frequency",
+  freq_fmx_pano: "FMX and Pano Frequency",
+  freq_prob_d140: "D0140 Problem-Focused Exam Frequency",
+  freq_srp: "SRP Frequency",
+}
 
 const OUTPUT_SCHEMA = {
   type: "object",
@@ -488,9 +505,25 @@ export async function extractFields(
       ...conflict.source_details,
     ].join(" "))
   )
+  const conflictFields = new Set(conflicts.map((conflict) => conflict.field_key))
+  for (const key of FIELD_KEYS) {
+    if (fields[key].toLowerCase().includes("please review") && !conflictFields.has(key)) {
+      const label = REVIEW_LABELS[key] ?? key.replaceAll("_", " ")
+      conflicts.push({
+        field_key: key,
+        label,
+        question: `What value should be printed for ${label}?`,
+        options: [],
+        source_details: modelReviewReasons.length > 0
+          ? modelReviewReasons
+          : ["The extractor could not confidently normalize the source wording."],
+      })
+      conflictFields.add(key)
+    }
+  }
   const validationReasons = validateExtractedFields(
     fields,
-    new Set(conflicts.map((conflict) => conflict.field_key))
+    conflictFields
   )
 
   if (validationReasons.length > 0) {
