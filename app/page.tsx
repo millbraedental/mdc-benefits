@@ -2,8 +2,24 @@
 
 import { useState, useRef } from "react"
 
-type Status = "idle" | "extracting" | "done" | "error"
-const APP_VERSION = "V1.1"
+type Status = "idle" | "extracting" | "review" | "rendering" | "done" | "error"
+type ReviewConflict = {
+  field_key: string
+  label: string
+  question: string
+  options: string[]
+  source_details: string[]
+}
+
+type ReviewResponse = {
+  reviewRequired: true
+  fields: Record<string, unknown>
+  conflicts: ReviewConflict[]
+  reviewReasons: string[]
+  costUsd: number | null
+}
+
+const APP_VERSION = "V1.2"
 
 export default function Home() {
   const [status, setStatus] = useState<Status>("idle")
@@ -15,6 +31,12 @@ export default function Home() {
   const [fullFile, setFullFile] = useState<File | null>(null)
   const [basicFile, setBasicFile] = useState<File | null>(null)
   const [dragOver, setDragOver] = useState<"full" | "basic" | null>(null)
+  const [pendingFields, setPendingFields] = useState<Record<string, unknown> | null>(null)
+  const [conflicts, setConflicts] = useState<ReviewConflict[]>([])
+  const [choices, setChoices] = useState<Record<number, string>>({})
+  const [customValues, setCustomValues] = useState<Record<number, string>>({})
+  const [reviewNotes, setReviewNotes] = useState("")
+  const [extractionReviewReasons, setExtractionReviewReasons] = useState<string[]>([])
   const fullInputRef = useRef<HTMLInputElement>(null)
   const basicInputRef = useRef<HTMLInputElement>(null)
 
@@ -42,6 +64,12 @@ export default function Home() {
     setErrorMsg("")
     setResultUrl("")
     setCostUsd(null)
+    setPendingFields(null)
+    setConflicts([])
+    setChoices({})
+    setCustomValues({})
+    setReviewNotes("")
+    setExtractionReviewReasons([])
 
     const formData = new FormData()
     formData.append("passcode", passcode)
@@ -51,24 +79,88 @@ export default function Home() {
     try {
       const res = await fetch("/api/process", { method: "POST", body: formData })
 
+      if (res.status === 409) {
+        const json = await res.json() as ReviewResponse
+        setPendingFields(json.fields)
+        setConflicts(json.conflicts)
+        setExtractionReviewReasons(json.reviewReasons)
+        setCostUsd(json.costUsd)
+        setStatus("review")
+        return
+      }
+
       if (!res.ok) {
         const json = await res.json() as { error?: string; reasons?: string[]; costUsd?: number | null }
         if (typeof json.costUsd === "number") setCostUsd(json.costUsd)
         const reasons = json.reasons?.length ? ` ${json.reasons.join(" ")}` : ""
+        if (json.reasons?.length) setReviewNotes(json.reasons.join("\n"))
         throw new Error(`${json.error ?? "Processing failed"}${reasons}`)
       }
 
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const disposition = res.headers.get("Content-Disposition") ?? ""
+      await acceptRenderedImage(res)
       const costHeader = res.headers.get("X-OpenAI-Cost-USD")
-      const match = disposition.match(/filename="(.+)"/)
-      setFilename(match ? match[1] : "benefits_form.jpg")
-      setResultUrl(url)
       setCostUsd(costHeader ? Number(costHeader) : null)
-      setStatus("done")
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Something went wrong")
+      const message = err instanceof Error ? err.message : "Something went wrong"
+      setErrorMsg(message)
+      setReviewNotes((current) => current || message)
+      setStatus("error")
+    }
+  }
+
+  async function acceptRenderedImage(res: Response) {
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const disposition = res.headers.get("Content-Disposition") ?? ""
+    const match = disposition.match(/filename="(.+)"/)
+    setFilename(match ? match[1] : "benefits_form.jpg")
+    setResultUrl(url)
+    setStatus("done")
+  }
+
+  async function handleResolvedRender() {
+    if (!pendingFields) return
+
+    const resolvedFields = { ...pendingFields }
+    const notes: string[] = [...extractionReviewReasons]
+
+    for (const [index, conflict] of conflicts.entries()) {
+      const choice = choices[index]
+      const selectedValue = choice === "__custom__" ? customValues[index]?.trim() : choice
+      if (!selectedValue) {
+        setErrorMsg(`Please choose a value for ${conflict.label}.`)
+        return
+      }
+
+      resolvedFields[conflict.field_key] = selectedValue
+      notes.push([
+        `${conflict.label}: ${conflict.question}`,
+        ...conflict.source_details.map((detail) => `- ${detail}`),
+        `User selected: ${selectedValue}`,
+      ].join("\n"))
+    }
+
+    setStatus("rendering")
+    setErrorMsg("")
+    setReviewNotes(notes.join("\n\n"))
+
+    try {
+      const res = await fetch("/api/render", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ passcode, fields: resolvedFields }),
+      })
+
+      if (!res.ok) {
+        const json = await res.json() as { error?: string }
+        throw new Error(json.error ?? "Rendering failed")
+      }
+
+      await acceptRenderedImage(res)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Something went wrong"
+      setErrorMsg(message)
+      setReviewNotes((current) => current || message)
       setStatus("error")
     }
   }
@@ -85,7 +177,7 @@ export default function Home() {
     if (file) selectFile(file, role)
   }
 
-  const busy = status === "extracting"
+  const busy = status === "extracting" || status === "rendering"
 
   return (
     <main className="relative min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
@@ -103,7 +195,7 @@ export default function Home() {
             const selectedFile = role === "full" ? fullFile : basicFile
             const inputRef = role === "full" ? fullInputRef : basicInputRef
             const label = role === "full" ? "Full Breakdown" : "Basic Breakdown"
-            const requirement = role === "full" ? "Required" : "Optional"
+            const requirement = role === "full" ? "Required" : "Not required"
 
             return (
               <div key={role}>
@@ -167,16 +259,100 @@ export default function Home() {
             {busy ? (
               <span className="flex items-center gap-3">
                 <span className="h-5 w-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                Extracting fields and rendering form…
+                {status === "rendering" ? "Rendering resolved form…" : "Extracting fields and rendering form…"}
               </span>
             ) : "Process Benefits"}
           </button>
         </div>
 
         {status === "error" && (
-          <div className="mt-4 rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-700">
+          <div className="mt-4 space-y-3 rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-700">
             <p>{errorMsg}</p>
-            {costUsd !== null && <p className="mt-2 font-medium">Estimated OpenAI cost: ${costUsd.toFixed(4)}</p>}
+            {costUsd !== null && <p className="font-medium">Estimated OpenAI cost: ${costUsd.toFixed(4)}</p>}
+            {reviewNotes && (
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <label htmlFor="error-review-notes" className="font-semibold">Review Notes / Extraction Issues</label>
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText(reviewNotes)}
+                    className="rounded-md border border-red-300 bg-white px-2.5 py-1 text-xs font-medium text-red-800 hover:bg-red-100"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <textarea
+                  id="error-review-notes"
+                  readOnly
+                  value={reviewNotes}
+                  rows={6}
+                  className="w-full resize-y rounded-md border border-red-200 bg-white p-3 text-xs text-gray-800"
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {status === "review" && (
+          <div className="mt-6 space-y-4 rounded-xl border border-amber-300 bg-amber-50 p-5">
+            <div>
+              <h2 className="font-semibold text-amber-950">Review required before rendering</h2>
+              <p className="mt-1 text-sm text-amber-800">Choose the correct value for each conflict. This does not make another OpenAI request.</p>
+            </div>
+
+            {conflicts.map((conflict, index) => (
+              <fieldset key={`${conflict.field_key}-${index}`} className="rounded-lg border border-amber-200 bg-white p-4">
+                <legend className="px-1 text-sm font-semibold text-gray-900">{conflict.label}</legend>
+                <p className="mb-3 text-sm text-gray-700">{conflict.question}</p>
+                {conflict.source_details.length > 0 && (
+                  <ul className="mb-3 list-disc space-y-1 pl-5 text-xs text-gray-500">
+                    {conflict.source_details.map((detail, detailIndex) => <li key={detailIndex}>{detail}</li>)}
+                  </ul>
+                )}
+                <div className="space-y-2">
+                  {conflict.options.map((option) => (
+                    <label key={option} className="flex items-center gap-2 text-sm text-gray-800">
+                      <input
+                        type="radio"
+                        name={`conflict-${index}`}
+                        value={option}
+                        checked={choices[index] === option}
+                        onChange={() => setChoices((current) => ({ ...current, [index]: option }))}
+                      />
+                      {option}
+                    </label>
+                  ))}
+                  <label className="flex items-center gap-2 text-sm text-gray-800">
+                    <input
+                      type="radio"
+                      name={`conflict-${index}`}
+                      value="__custom__"
+                      checked={choices[index] === "__custom__"}
+                      onChange={() => setChoices((current) => ({ ...current, [index]: "__custom__" }))}
+                    />
+                    Use custom value
+                  </label>
+                  {choices[index] === "__custom__" && (
+                    <input
+                      type="text"
+                      value={customValues[index] ?? ""}
+                      onChange={(event) => setCustomValues((current) => ({ ...current, [index]: event.target.value }))}
+                      placeholder="Enter the value to print"
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900"
+                    />
+                  )}
+                </div>
+              </fieldset>
+            ))}
+
+            {errorMsg && <p className="text-sm font-medium text-red-700">{errorMsg}</p>}
+            <button
+              type="button"
+              onClick={handleResolvedRender}
+              className="flex w-full items-center justify-center rounded-lg bg-amber-600 px-4 py-3 text-sm font-medium text-white hover:bg-amber-700"
+            >
+              Apply choices and render
+            </button>
           </div>
         )}
 
@@ -186,6 +362,27 @@ export default function Home() {
             {costUsd !== null && (
               <div className="rounded-lg border border-gray-200 bg-white px-4 py-3 text-center text-sm text-gray-700">
                 Estimated OpenAI cost for this run: <span className="font-semibold">${costUsd.toFixed(4)}</span>
+              </div>
+            )}
+            {reviewNotes && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <label htmlFor="review-notes" className="text-sm font-semibold text-amber-950">Review Notes / Extraction Issues</label>
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText(reviewNotes)}
+                    className="rounded-md border border-amber-300 bg-white px-2.5 py-1 text-xs font-medium text-amber-900 hover:bg-amber-100"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <textarea
+                  id="review-notes"
+                  readOnly
+                  value={reviewNotes}
+                  rows={8}
+                  className="w-full resize-y rounded-md border border-amber-200 bg-white p-3 text-xs text-gray-800"
+                />
               </div>
             )}
             <a
@@ -205,6 +402,12 @@ export default function Home() {
                 setCostUsd(null)
                 setFullFile(null)
                 setBasicFile(null)
+                setPendingFields(null)
+                setConflicts([])
+                setChoices({})
+                setCustomValues({})
+                setReviewNotes("")
+                setExtractionReviewReasons([])
                 if (fullInputRef.current) fullInputRef.current.value = ""
                 if (basicInputRef.current) basicInputRef.current.value = ""
               }}

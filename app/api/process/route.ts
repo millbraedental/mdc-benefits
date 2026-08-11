@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import { timingSafeEqual } from "crypto"
 import * as path from "path"
 import { extractFields, ReviewRequiredError } from "@/lib/extract"
 import { renderForm, outputFilename } from "@/lib/render"
+import { passcodesMatch } from "@/lib/auth"
 
 export const maxDuration = 120
-
-function passcodesMatch(provided: string, expected: string): boolean {
-  const providedBuffer = Buffer.from(provided)
-  const expectedBuffer = Buffer.from(expected)
-  return providedBuffer.length === expectedBuffer.length
-    && timingSafeEqual(providedBuffer, expectedBuffer)
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -58,7 +51,20 @@ export async function POST(req: NextRequest) {
     }
 
     // Stage 1: extract fields via OpenAI
-    const { fields, cost } = await extractFields(pdfs)
+    const { fields, cost, conflicts, reviewReasons } = await extractFields(pdfs)
+
+    if (conflicts.length > 0) {
+      return NextResponse.json(
+        {
+          reviewRequired: true,
+          fields,
+          conflicts,
+          reviewReasons,
+          costUsd: cost?.usd ?? null,
+        },
+        { status: 409 }
+      )
+    }
 
     // Stage 2: render onto template
     const templatePath = path.join(process.cwd(), "public", "template.jpg")

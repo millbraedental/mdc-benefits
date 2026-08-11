@@ -157,6 +157,7 @@ REV22 FREQUENCY EXPANSIONS:
 RENDERING/REVIEW METADATA:
 review_required: true only when the authoritative FULL breakdown contains an internal contradiction or ambiguity that cannot be resolved under these rules. Differences between FULL and BASIC never require review. Otherwise false.
 review_reasons: concise descriptions of every unresolved ambiguity within FULL. Do not mention BASIC/FULL discrepancies. Use an empty array when review_required=false.
+review_conflicts: one item for every user-resolvable ambiguity within FULL. Each item must contain: field_key (the exact output field affected), label (short human-readable field/code name), question (what the user must decide), options (two or more compact normalized values suitable for rendering), and source_details (the conflicting source wording corresponding to the options). For example, conflicting D0274 limitations belong to field_key "freq_bwx" with options such as "1/Cal Year" and "2/Cal Year". Set the affected output field to "Please Review" until the user chooses. Use an empty array when there are no conflicts.
 
 The active boilerplate and output are 1224×1584 pixels at 72 DPI. The outdated REV22 reference to 300 DPI must not be applied.
 
@@ -228,9 +229,18 @@ export interface ExtractedFields {
   freq_srp: string
   review_required: boolean
   review_reasons: string[]
+  review_conflicts: ReviewConflict[]
 }
 
-const FIELD_KEYS = [
+export interface ReviewConflict {
+  field_key: string
+  label: string
+  question: string
+  options: string[]
+  source_details: string[]
+}
+
+export const FIELD_KEYS = [
   "payor",
   "patient_name",
   "patient_id",
@@ -302,8 +312,23 @@ const OUTPUT_SCHEMA = {
     ...Object.fromEntries(FIELD_KEYS.map((key) => [key, { type: "string" }])),
     review_required: { type: "boolean" },
     review_reasons: { type: "array", items: { type: "string" } },
+    review_conflicts: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          field_key: { type: "string", enum: FIELD_KEYS },
+          label: { type: "string" },
+          question: { type: "string" },
+          options: { type: "array", items: { type: "string" } },
+          source_details: { type: "array", items: { type: "string" } },
+        },
+        required: ["field_key", "label", "question", "options", "source_details"],
+        additionalProperties: false,
+      },
+    },
   },
-  required: [...FIELD_KEYS, "review_required", "review_reasons"],
+  required: [...FIELD_KEYS, "review_required", "review_reasons", "review_conflicts"],
   additionalProperties: false,
 } as const
 
@@ -378,7 +403,7 @@ function estimateCost(
   }
 }
 
-function validateExtractedFields(fields: ExtractedFields): string[] {
+function validateExtractedFields(fields: ExtractedFields, deferredFields = new Set<string>()): string[] {
   const reasons: string[] = []
 
   for (const key of FIELD_KEYS) {
@@ -389,15 +414,15 @@ function validateExtractedFields(fields: ExtractedFields): string[] {
 
   const datePattern = /^(?:\d{2}-[A-Z]{3}-\d{2}|MISSING|N\/A|Auth)$/
   for (const key of ["effective_date", "last_bwx", "last_fmx", "last_pano", "patient_dob"] as const) {
-    if (!datePattern.test(fields[key])) {
+    if (!deferredFields.has(key) && !datePattern.test(fields[key])) {
       reasons.push(`${key} has an invalid REV22 date value: ${fields[key]}`)
     }
   }
 
-  if (!/^(?:\$[\d,]+|MISSING)$/.test(fields.max)) {
+  if (!deferredFields.has("max") && !/^(?:\$[\d,]+|MISSING)$/.test(fields.max)) {
     reasons.push(`max has an invalid dollar value: ${fields.max}`)
   }
-  if (!/^(?:\$[\d,]+|MISSING)$/.test(fields.ded)) {
+  if (!deferredFields.has("ded") && !/^(?:\$[\d,]+|MISSING)$/.test(fields.ded)) {
     reasons.push(`ded has an invalid dollar value: ${fields.ded}`)
   }
 
@@ -406,7 +431,12 @@ function validateExtractedFields(fields: ExtractedFields): string[] {
 
 export async function extractFields(
   pdfs: PdfInput[]
-): Promise<{ fields: ExtractedFields; cost: CostEstimate | null }> {
+): Promise<{
+  fields: ExtractedFields
+  cost: CostEstimate | null
+  conflicts: ReviewConflict[]
+  reviewReasons: string[]
+}> {
   if (pdfs.length === 0) {
     throw new Error("At least one benefits PDF is required.")
   }
@@ -449,19 +479,30 @@ export async function extractFields(
 
   const fields = JSON.parse(response.output_text) as ExtractedFields
   const cost = estimateCost(model, response.usage)
-  const validationReasons = validateExtractedFields(fields)
   const modelReviewReasons = fields.review_reasons.filter(
     (reason) => !isFullBasicDiscrepancy(reason)
   )
-  const reviewReasons = [...modelReviewReasons, ...validationReasons]
-  const unexplainedModelReview = fields.review_required && fields.review_reasons.length === 0
+  const conflicts = fields.review_conflicts.filter((conflict) =>
+    !isFullBasicDiscrepancy([
+      conflict.question,
+      ...conflict.source_details,
+    ].join(" "))
+  )
+  const validationReasons = validateExtractedFields(
+    fields,
+    new Set(conflicts.map((conflict) => conflict.field_key))
+  )
 
-  if (unexplainedModelReview || reviewReasons.length > 0) {
+  if (validationReasons.length > 0) {
     throw new ReviewRequiredError(
-      reviewReasons.length ? reviewReasons : ["The extraction requires manual review."],
+      validationReasons,
       cost
     )
   }
 
-  return { fields, cost }
+  if (fields.review_required && conflicts.length === 0 && modelReviewReasons.length === 0) {
+    throw new ReviewRequiredError(["The extraction requires manual review."], cost)
+  }
+
+  return { fields, cost, conflicts, reviewReasons: modelReviewReasons }
 }
