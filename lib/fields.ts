@@ -113,7 +113,7 @@ export const FIELDS: FieldDef[] = [
 // Circle definitions for Yes/No toggle fields
 // center_x, center_y, radius 22, thickness 3
 export const CIRCLES = {
-  ng_yes:        { cx: 991,  cy: 1056 },
+  ng_yes:        { cx: 996,  cy: 1056 },
   ng_no:         { cx: 1045, cy: 1056 },
   post_comp_amalgam: { cx: 298, cy: 1152 },
   post_comp_yes:     { cx: 237, cy: 1152 },
