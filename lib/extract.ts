@@ -156,7 +156,7 @@ patient_dob: PATIENT → DOB (fallback Date of Birth). Patient DOB only. Format 
 claims_paying_id: PAYER DETAILS → Claims Paying ID (fallback Payer ID). Then NOTES → PAYOR ID/PAYER ID. Preserve exact value. Missing→"N/A".
 payor: PAYER DETAILS → Payer Name. Copy exactly. Missing→"MISSING".
 group_name: PLAN INFORMATION → Group Name. Do not use Group Number, Plan Number, Policy ID, or employer address. Copy exactly. Missing→"MISSING".
-fee_schedule: NETWORK COVERAGE → Fee Schedule. Trim surrounding whitespace and compare case-insensitively. If the value is exactly "DELTA DENTAL PREMIER" or "PREMIER", output "PREMIER" and do not request review. For every other value, including blank, missing, or "–", set this field to "Please Review", set review_required=true, and add a review_conflicts item for field_key "fee_schedule". Label it "Fee Schedule"; include the exact Stratus Fee Schedule wording in source_details; and provide these normalized options in this order: "DPO-CAP", "UCR", "LOW-FEE", "HIGH-FEE", "AUTH". The user interface supplies the additional custom-value option.
+fee_schedule: ALWAYS require user confirmation for this field, even when the recommended value is clear. First search the ENTIRE authoritative FULL breakdown, including NOTES and network/reimbursement disclosures, for language stating that Premier Providers are reimbursed at the PPO or DPO schedule/fees. Treat wording variations, capitalization, punctuation, and line wrapping as equivalent. Positive examples include "Premier Providers are reimbursed at the PPO schedule", "Premier Providers are reimbursed at the DPO schedule", "PPO PROVIDERS (DPO IN THE STATE OF TEXAS) AND PREMIER PROVIDERS ARE REIMBURSED AT THE PPO SCHEDULE", "Premier Providers are reimbursed at PPO fees", and "Premier Providers are reimbursed at DPO fees". If any positive reimbursement statement appears, recommend and output "DPO-CAP"; this whole-document rule takes precedence even when NETWORK COVERAGE → Fee Schedule says "DELTA DENTAL PREMIER" or "PREMIER". Do not trigger from higher-out-of-pocket-cost language alone; it may corroborate a positive reimbursement statement but is not sufficient by itself. If no positive reimbursement statement appears, inspect NETWORK COVERAGE → Fee Schedule and normalize a clearly stated DELTA DENTAL PREMIER/PREMIER value to "PREMIER"; normalize clearly stated DPO-CAP, UCR, LOW-FEE, HIGH-FEE, or AUTH values to those exact labels. If the value is blank, missing, "–", or unfamiliar, output "Please Review" without guessing. In every case add a review_conflicts item with field_key "fee_schedule", label "Fee Schedule Confirmation", and question "Confirm the fee schedule to print." Include the exact Fee Schedule value and the exact reimbursement note located in source_details. If no qualifying DPO-CAP reimbursement note was located, explicitly say so in source_details. Put the recommended output first in options, followed without duplicates by the other choices from: "PREMIER", "DPO-CAP", "UCR", "LOW-FEE", "HIGH-FEE", "AUTH". If no recommendation can be made, use that standard option order. The user interface supplies the additional custom-value option. This confirmation is intentional and must not be omitted.
 
 REV22 FREQUENCY EXPANSIONS:
 - Fluoride supports Benefit Period: 1 Visit→"1/Benefit Period", 2 Visit→"2/Benefit Period"; 24/36/48/60 Month→"1/2YR", "1/3YR", "1/4YR", "1/5YR".
@@ -316,6 +316,7 @@ export const FIELD_KEYS = [
 ] as const satisfies readonly (keyof ExtractedFields)[]
 
 const REVIEW_LABELS: Partial<Record<(typeof FIELD_KEYS)[number], string>> = {
+  fee_schedule: "Fee Schedule Confirmation",
   freq_bwx: "D0274 Adult Bitewings Frequency",
   freq_exam_prophy: "Exam and Prophy Frequency",
   freq_fmx_pano: "FMX and Pano Frequency",
@@ -505,6 +506,22 @@ export async function extractFields(
       ...conflict.source_details,
     ].join(" "))
   )
+  if (!conflicts.some((conflict) => conflict.field_key === "fee_schedule")) {
+    const standardFeeOptions = ["PREMIER", "DPO-CAP", "UCR", "LOW-FEE", "HIGH-FEE", "AUTH"]
+    const recommendation = fields.fee_schedule.trim().toUpperCase()
+    conflicts.push({
+      field_key: "fee_schedule",
+      label: "Fee Schedule Confirmation",
+      question: "Confirm the fee schedule to print.",
+      options: standardFeeOptions.includes(recommendation)
+        ? [recommendation, ...standardFeeOptions.filter((option) => option !== recommendation)]
+        : standardFeeOptions,
+      source_details: [
+        `Extractor recommendation: ${fields.fee_schedule}`,
+        "The extractor did not return its supporting fee-schedule note; confirm this selection manually.",
+      ],
+    })
+  }
   const conflictFields = new Set(conflicts.map((conflict) => conflict.field_key))
   for (const key of FIELD_KEYS) {
     if (fields[key].toLowerCase().includes("please review") && !conflictFields.has(key)) {

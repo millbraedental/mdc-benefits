@@ -19,7 +19,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.12"
+const APP_VERSION = "V1.14"
 
 export default function Home() {
   const [status, setStatus] = useState<Status>("idle")
@@ -83,6 +83,15 @@ export default function Home() {
         const json = await res.json() as ReviewResponse
         setPendingFields(json.fields)
         setConflicts(json.conflicts)
+        setChoices(Object.fromEntries(
+          json.conflicts.flatMap((conflict, index) => {
+            if (conflict.field_key !== "fee_schedule") return []
+            const recommendation = json.fields.fee_schedule
+            return typeof recommendation === "string" && conflict.options.includes(recommendation)
+              ? [[index, recommendation]]
+              : []
+          })
+        ))
         setExtractionReviewReasons(json.reviewReasons)
         setCostUsd(json.costUsd)
         setStatus("review")
@@ -313,7 +322,7 @@ export default function Home() {
                   </ul>
                 )}
                 <div className="space-y-2">
-                  {conflict.options.map((option) => (
+                  {conflict.options.map((option, optionIndex) => (
                     <label key={option} className="flex items-center gap-2 text-sm text-gray-800">
                       <input
                         type="radio"
@@ -323,6 +332,9 @@ export default function Home() {
                         onChange={() => setChoices((current) => ({ ...current, [index]: option }))}
                       />
                       {option}
+                      {conflict.field_key === "fee_schedule" && optionIndex === 0 && (
+                        <span className="rounded bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700">Recommended</span>
+                      )}
                     </label>
                   ))}
                   <label className="flex items-center gap-2 text-sm text-gray-800">
