@@ -67,12 +67,16 @@ function fitWrappedText(
   maxWidth: number,
   maxLines: number,
   maxFontSize: number,
-  minFontSize: number
+  minFontSize: number,
+  maxHeight?: number
 ): { fontSize: number; lines: string[] } {
   for (let fontSize = maxFontSize; fontSize >= minFontSize; fontSize--) {
     ctx.font = `${fontSize}px DejaVuSans`
     const lines = wrapText(ctx, text, maxWidth)
-    if (lines.length <= maxLines) return { fontSize, lines }
+    const lineHeight = fontSize + 1
+    if (lines.length <= maxLines && (!maxHeight || lines.length * lineHeight <= maxHeight)) {
+      return { fontSize, lines }
+    }
   }
 
   ctx.font = `${minFontSize}px DejaVuSans`
@@ -174,17 +178,15 @@ export async function renderForm(
         : "black"
       if (field.maxLines && field.maxLines > 1) {
         const horizontalPadding = 2
-        const maxFontSize = Math.min(
-          field.maxFontSize ?? FONT_SIZE,
-          Math.floor((boxH - 2) / field.maxLines) - 1
-        )
+        const maxFontSize = field.maxFontSize ?? FONT_SIZE
         const fitted = fitWrappedText(
           ctx,
           value,
           boxW - horizontalPadding * 2,
           field.maxLines,
           maxFontSize,
-          field.minFontSize ?? 12
+          field.minFontSize ?? 12,
+          boxH - 2
         )
         const lineHeight = fitted.fontSize + 1
         const totalHeight = fitted.lines.length * lineHeight

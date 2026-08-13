@@ -61,7 +61,8 @@ max: GENERAL MAXIMUM → INDIVIDUAL → Amount. Format: $X,XXX no cents.
 
 ded: DEDUCTIBLE INFORMATION → INDIVIDUAL → Amount. Format: $XX or $XXX no cents.
 
-waiting_period: CLASSIFICATIONS → BASIC and MAJOR → Waiting Period values. If both say No → "No". If either says Yes → "Yes". Fallback: check NOTES for "NO WAITING PERIOD" → "No", or "WAITING PERIOD" without NO → "Yes".
+waiting_period: CLASSIFICATIONS → BASIC and MAJOR → Waiting Period values. This is the dental waiting-period source; do not use ORTHODONTICS → "Has Waiting Period?" for this field. If both say No → "No". If either says Yes → "Yes". Fallback: check NOTES for "NO WAITING PERIOD" → "No", or "WAITING PERIOD" without NO → "Yes".
+waiting_period_source: Copy the exact CLASSIFICATIONS waiting-period results used above, including the classification names and values, for example "BASIC Waiting Period: Yes; MAJOR Waiting Period: No". Preserve any duration or qualification shown by Stratus. If the classification values are absent and NOTES is used, copy the exact relevant NOTES wording. If no waiting-period source is available, output "MISSING". Never use the orthodontic "Has Waiting Period?" result here.
 
 cob: Check NOTES for "COB:" first → use that value. Otherwise PLAN LIMITATIONS → COB Rule. If COB Rule is "–" or blank → check COB Applies: No → "No", Yes → "Yes". Copy exactly: "Standard", "NON-DUP", "No", "Yes", etc.
 
@@ -191,6 +192,7 @@ export interface ExtractedFields {
   max: string
   ded: string
   waiting_period: string
+  waiting_period_source: string
   cob: string
   ortho_max: string
   ortho_pct: string
@@ -268,6 +270,7 @@ export const FIELD_KEYS = [
   "max",
   "ded",
   "waiting_period",
+  "waiting_period_source",
   "cob",
   "ortho_max",
   "ortho_pct",
@@ -520,6 +523,16 @@ export async function extractFields(
         `Extractor recommendation: ${fields.fee_schedule}`,
         "The extractor did not return its supporting fee-schedule note; confirm this selection manually.",
       ],
+    })
+  }
+  if (fields.waiting_period.trim().toLowerCase() === "yes" &&
+      !conflicts.some((conflict) => conflict.field_key === "waiting_period")) {
+    conflicts.push({
+      field_key: "waiting_period",
+      label: "Waiting Period Notice",
+      question: "This plan has a waiting period. Be sure to update the breakdown before continuing.",
+      options: ["OK to continue"],
+      source_details: [fields.waiting_period_source],
     })
   }
   const conflictFields = new Set(conflicts.map((conflict) => conflict.field_key))

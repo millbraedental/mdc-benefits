@@ -19,7 +19,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.15"
+const APP_VERSION = "V1.17"
 
 const HEADER_FLAGS = [
   ["oon_auth", "?OON? - AUTH"],
@@ -166,7 +166,9 @@ export default function Home() {
         return
       }
 
-      resolvedFields[conflict.field_key] = selectedValue
+      if (!(conflict.field_key === "waiting_period" && selectedValue === "OK to continue")) {
+        resolvedFields[conflict.field_key] = selectedValue
+      }
       notes.push([
         `${conflict.label}: ${conflict.question}`,
         ...conflict.source_details.map((detail) => `- ${detail}`),
@@ -412,17 +414,19 @@ export default function Home() {
                       )}
                     </label>
                   ))}
-                  <label className="flex items-center gap-2 text-sm text-gray-800">
-                    <input
-                      type="radio"
-                      name={`conflict-${index}`}
-                      value="__custom__"
-                      checked={choices[index] === "__custom__"}
-                      onChange={() => setChoices((current) => ({ ...current, [index]: "__custom__" }))}
-                    />
-                    Use custom value
-                  </label>
-                  {choices[index] === "__custom__" && (
+                  {conflict.field_key !== "waiting_period" && (
+                    <label className="flex items-center gap-2 text-sm text-gray-800">
+                      <input
+                        type="radio"
+                        name={`conflict-${index}`}
+                        value="__custom__"
+                        checked={choices[index] === "__custom__"}
+                        onChange={() => setChoices((current) => ({ ...current, [index]: "__custom__" }))}
+                      />
+                      Use custom value
+                    </label>
+                  )}
+                  {conflict.field_key !== "waiting_period" && choices[index] === "__custom__" && (
                     <input
                       type="text"
                       value={customValues[index] ?? ""}
