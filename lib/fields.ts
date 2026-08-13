@@ -121,3 +121,19 @@ export const CIRCLES = {
 
 // COB alert text placement
 export const COB_ALERT = { x: 658, y: 65, x2: 1131 }
+
+export const HEADER_BOXES = {
+  primary:     { x: 21,  y: 80,  width: 113, height: 36 },
+  secondary:   { x: 163, y: 80,  width: 153, height: 36 },
+  delta:       { x: 18,  y: 117, width: 80,  height: 36 },
+  dpo_cap:     { x: 125, y: 117, width: 116, height: 36 },
+  metlife:     { x: 269, y: 117, width: 108, height: 36 },
+  guardian:    { x: 399, y: 117, width: 130, height: 36 },
+  oon_auth:    { x: 18,  y: 175, width: 166, height: 36 },
+  ok_for_hyg:  { x: 190, y: 175, width: 151, height: 36 },
+  col_pct:     { x: 351, y: 175, width: 83,  height: 36 },
+  col_ded:     { x: 439, y: 175, width: 111, height: 36 },
+  col_dpo_cap: { x: 566, y: 175, width: 166, height: 36 },
+  col_hyg:     { x: 746, y: 175, width: 119, height: 36 },
+  col_full_ucr:{ x: 874, y: 175, width: 169, height: 36 },
+} as const

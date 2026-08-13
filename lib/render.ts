@@ -1,13 +1,44 @@
 import { createCanvas, loadImage, GlobalFonts } from "@napi-rs/canvas"
 import * as fs from "fs"
 import * as path from "path"
-import { FIELDS, CIRCLES, COB_ALERT } from "./fields"
+import { FIELDS, CIRCLES, COB_ALERT, HEADER_BOXES } from "./fields"
 import type { ExtractedFields } from "./extract"
 
 const FONT_SIZE = 18
 const BOX_HEIGHT = 32
 const CIRCLE_RADIUS = 22
 const CIRCLE_THICKNESS = 3
+
+export type PrimaryStatus = "primary" | "secondary" | "none"
+export type CarrierBox = "delta" | "dpo_cap" | "metlife" | "guardian" | "none"
+export type HeaderFlag = "oon_auth" | "ok_for_hyg" | "col_pct" | "col_ded" | "col_dpo_cap" | "col_hyg" | "col_full_ucr"
+
+export interface HeaderAnnotations {
+  primaryStatus: PrimaryStatus
+  carrier: CarrierBox
+  flags: HeaderFlag[]
+}
+
+function strokeRoundedBox(
+  ctx: ReturnType<ReturnType<typeof createCanvas>["getContext"]>,
+  box: { x: number; y: number; width: number; height: number }
+) {
+  const radius = 6
+  const right = box.x + box.width
+  const bottom = box.y + box.height
+  ctx.beginPath()
+  ctx.moveTo(box.x + radius, box.y)
+  ctx.lineTo(right - radius, box.y)
+  ctx.quadraticCurveTo(right, box.y, right, box.y + radius)
+  ctx.lineTo(right, bottom - radius)
+  ctx.quadraticCurveTo(right, bottom, right - radius, bottom)
+  ctx.lineTo(box.x + radius, bottom)
+  ctx.quadraticCurveTo(box.x, bottom, box.x, bottom - radius)
+  ctx.lineTo(box.x, box.y + radius)
+  ctx.quadraticCurveTo(box.x, box.y, box.x + radius, box.y)
+  ctx.closePath()
+  ctx.stroke()
+}
 
 function wrapText(
   ctx: ReturnType<ReturnType<typeof createCanvas>["getContext"]>,
@@ -62,7 +93,8 @@ function registerFonts() {
 
 export async function renderForm(
   templatePath: string,
-  fields: ExtractedFields
+  fields: ExtractedFields,
+  annotations?: HeaderAnnotations
 ): Promise<Buffer> {
   registerFonts()
 
@@ -76,6 +108,21 @@ export async function renderForm(
 
   // Draw template
   ctx.drawImage(templateImage, 0, 0)
+
+  if (annotations) {
+    ctx.strokeStyle = "rgb(220,0,0)"
+    ctx.lineWidth = 2
+
+    if (annotations.primaryStatus !== "none") {
+      strokeRoundedBox(ctx, HEADER_BOXES[annotations.primaryStatus])
+    }
+    if (annotations.carrier !== "none") {
+      strokeRoundedBox(ctx, HEADER_BOXES[annotations.carrier])
+    }
+    for (const flag of annotations.flags) {
+      strokeRoundedBox(ctx, HEADER_BOXES[flag])
+    }
+  }
 
   // --- Render standard fields ---
   for (const field of FIELDS) {

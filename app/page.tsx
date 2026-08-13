@@ -19,7 +19,17 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.14"
+const APP_VERSION = "V1.15"
+
+const HEADER_FLAGS = [
+  ["oon_auth", "?OON? - AUTH"],
+  ["ok_for_hyg", "OK FOR HYG"],
+  ["col_pct", "COL %"],
+  ["col_ded", "COL DED"],
+  ["col_dpo_cap", "COL DPO-CAP"],
+  ["col_hyg", "COL HYG!"],
+  ["col_full_ucr", "COL FULL UCR"],
+] as const
 
 export default function Home() {
   const [status, setStatus] = useState<Status>("idle")
@@ -37,6 +47,9 @@ export default function Home() {
   const [customValues, setCustomValues] = useState<Record<number, string>>({})
   const [reviewNotes, setReviewNotes] = useState("")
   const [extractionReviewReasons, setExtractionReviewReasons] = useState<string[]>([])
+  const [primaryStatus, setPrimaryStatus] = useState("")
+  const [carrier, setCarrier] = useState("")
+  const [headerFlags, setHeaderFlags] = useState<string[]>([])
   const fullInputRef = useRef<HTMLInputElement>(null)
   const basicInputRef = useRef<HTMLInputElement>(null)
 
@@ -70,6 +83,9 @@ export default function Home() {
     setCustomValues({})
     setReviewNotes("")
     setExtractionReviewReasons([])
+    setPrimaryStatus("")
+    setCarrier("")
+    setHeaderFlags([])
 
     const formData = new FormData()
     formData.append("passcode", passcode)
@@ -130,6 +146,15 @@ export default function Home() {
   async function handleResolvedRender() {
     if (!pendingFields) return
 
+    if (!primaryStatus) {
+      setErrorMsg("Please choose PRIMARY, SECONDARY, or No Box.")
+      return
+    }
+    if (!carrier) {
+      setErrorMsg("Please choose a carrier box or No Box.")
+      return
+    }
+
     const resolvedFields = { ...pendingFields }
     const notes: string[] = [...extractionReviewReasons]
 
@@ -157,7 +182,11 @@ export default function Home() {
       const res = await fetch("/api/render", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ passcode, fields: resolvedFields }),
+        body: JSON.stringify({
+          passcode,
+          fields: resolvedFields,
+          annotations: { primaryStatus, carrier, flags: headerFlags },
+        }),
       })
 
       if (!res.ok) {
@@ -312,6 +341,52 @@ export default function Home() {
               <p className="mt-1 text-sm text-amber-800">Choose the correct value for each conflict. This does not make another OpenAI request.</p>
             </div>
 
+
+            <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
+              <legend className="px-1 text-sm font-semibold text-gray-900">Plan Position</legend>
+              <p className="mb-3 text-sm text-gray-700">Choose one red box.</p>
+              <div className="space-y-2">
+                {[["primary", "PRIMARY"], ["secondary", "SECONDARY"], ["none", "No Box"]].map(([value, label]) => (
+                  <label key={value} className="flex items-center gap-2 text-sm text-gray-800">
+                    <input type="radio" name="primary-status" checked={primaryStatus === value} onChange={() => setPrimaryStatus(value)} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
+              <legend className="px-1 text-sm font-semibold text-gray-900">Carrier</legend>
+              <p className="mb-3 text-sm text-gray-700">Choose one red box.</p>
+              <div className="space-y-2">
+                {[["delta", "DELTA"], ["dpo_cap", "DPO-CAP"], ["metlife", "METLIFE"], ["guardian", "GUARDIAN"], ["none", "No Box"]].map(([value, label]) => (
+                  <label key={value} className="flex items-center gap-2 text-sm text-gray-800">
+                    <input type="radio" name="carrier" checked={carrier === value} onChange={() => setCarrier(value)} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
+              <legend className="px-1 text-sm font-semibold text-gray-900">Additional Header Boxes</legend>
+              <p className="mb-3 text-sm text-gray-700">Select any combination, or leave all unchecked.</p>
+              <div className="space-y-2">
+                {HEADER_FLAGS.map(([value, label]) => (
+                  <label key={value} className="flex items-center gap-2 text-sm text-gray-800">
+                    <input
+                      type="checkbox"
+                      checked={headerFlags.includes(value)}
+                      onChange={() => setHeaderFlags((current) => current.includes(value)
+                        ? current.filter((item) => item !== value)
+                        : [...current, value])}
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
             {conflicts.map((conflict, index) => (
               <fieldset key={`${conflict.field_key}-${index}`} className="rounded-lg border border-amber-200 bg-white p-4">
                 <legend className="px-1 text-sm font-semibold text-gray-900">{conflict.label}</legend>
@@ -423,6 +498,9 @@ export default function Home() {
                 setCustomValues({})
                 setReviewNotes("")
                 setExtractionReviewReasons([])
+                setPrimaryStatus("")
+                setCarrier("")
+                setHeaderFlags([])
                 if (fullInputRef.current) fullInputRef.current.value = ""
                 if (basicInputRef.current) basicInputRef.current.value = ""
               }}
