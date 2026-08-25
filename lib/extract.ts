@@ -155,7 +155,7 @@ REV22 ADDITIONAL FIELDS:
 patient_id: PLAN INFORMATION → Policy ID first. Fallback priority: Member ID, Subscriber ID, Patient ID, ID Number, Member Number, SS#, Social Security Number. Preserve exact letters, digits, leading zeros, and hyphens. Missing→"N/A".
 patient_dob: PATIENT → DOB (fallback Date of Birth). Patient DOB only. Format DD-MMM-YY. Missing→"N/A".
 claims_paying_id: PAYER DETAILS → Claims Paying ID (fallback Payer ID). Then NOTES → PAYOR ID/PAYER ID. Preserve exact value. Missing→"N/A".
-payor: PAYER DETAILS → Payer Name. Copy exactly. Missing→"MISSING".
+payor: PAYER DETAILS → Payer Name. Convert the complete carrier name to UPPERCASE. Missing→"MISSING".
 group_name: PLAN INFORMATION → Group Name. Do not use Group Number, Plan Number, Policy ID, or employer address. Copy exactly. Missing→"MISSING".
 fee_schedule: ALWAYS require user confirmation for this field, even when the recommended value is clear. First search the ENTIRE authoritative FULL breakdown, including NOTES and network/reimbursement disclosures, for language stating that Premier Providers are reimbursed at the PPO or DPO schedule/fees. Treat wording variations, capitalization, punctuation, and line wrapping as equivalent. Positive examples include "Premier Providers are reimbursed at the PPO schedule", "Premier Providers are reimbursed at the DPO schedule", "PPO PROVIDERS (DPO IN THE STATE OF TEXAS) AND PREMIER PROVIDERS ARE REIMBURSED AT THE PPO SCHEDULE", "Premier Providers are reimbursed at PPO fees", and "Premier Providers are reimbursed at DPO fees". If any positive reimbursement statement appears, recommend and output "DPO-CAP"; this whole-document rule takes precedence even when NETWORK COVERAGE → Fee Schedule says "DELTA DENTAL PREMIER" or "PREMIER". Do not trigger from higher-out-of-pocket-cost language alone; it may corroborate a positive reimbursement statement but is not sufficient by itself. If no positive reimbursement statement appears, inspect NETWORK COVERAGE → Fee Schedule and normalize a clearly stated DELTA DENTAL PREMIER/PREMIER value to "PREMIER"; normalize clearly stated DPO-CAP, UCR, LOW-FEE, HIGH-FEE, AUTH, or GUARDIAN values to those exact labels. If the value is blank, missing, "–", or unfamiliar, output "Please Review" without guessing. In every case add a review_conflicts item with field_key "fee_schedule", label "Fee Schedule Confirmation", and question "Confirm the fee schedule to print." Include the exact Fee Schedule value and the exact reimbursement note located in source_details. If no qualifying DPO-CAP reimbursement note was located, explicitly say so in source_details. Put the recommended output first in options, followed without duplicates by the other choices from: "PREMIER", "DPO-CAP", "UCR", "LOW-FEE", "HIGH-FEE", "AUTH", "GUARDIAN". If no recommendation can be made, use that standard option order. The user interface supplies the additional CUSTOM option. This confirmation is intentional and must not be omitted.
 
@@ -499,6 +499,9 @@ export async function extractFields(
   }
 
   const fields = JSON.parse(response.output_text) as ExtractedFields
+  if (fields.payor !== "MISSING") {
+    fields.payor = fields.payor.toUpperCase()
+  }
   const cost = estimateCost(model, response.usage)
   const modelReviewReasons = fields.review_reasons.filter(
     (reason) => !isFullBasicDiscrepancy(reason)

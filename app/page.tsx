@@ -19,7 +19,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.19"
+const APP_VERSION = "V1.20"
 
 const HEADER_FLAGS = [
   ["oon_auth", "?OON? - AUTH"],
