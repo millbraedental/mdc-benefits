@@ -19,7 +19,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.17"
+const APP_VERSION = "V1.19"
 
 const HEADER_FLAGS = [
   ["oon_auth", "?OON? - AUTH"],
@@ -35,6 +35,7 @@ export default function Home() {
   const [status, setStatus] = useState<Status>("idle")
   const [errorMsg, setErrorMsg] = useState("")
   const [resultUrl, setResultUrl] = useState("")
+  const [previewUrl, setPreviewUrl] = useState("")
   const [filename, setFilename] = useState("")
   const [costUsd, setCostUsd] = useState<number | null>(null)
   const [passcode, setPasscode] = useState("")
@@ -76,6 +77,7 @@ export default function Home() {
     setStatus("extracting")
     setErrorMsg("")
     setResultUrl("")
+    setPreviewUrl("")
     setCostUsd(null)
     setPendingFields(null)
     setConflicts([])
@@ -111,6 +113,7 @@ export default function Home() {
         setExtractionReviewReasons(json.reviewReasons)
         setCostUsd(json.costUsd)
         setStatus("review")
+        await loadPreliminaryPreview(json.fields)
         return
       }
 
@@ -141,6 +144,25 @@ export default function Home() {
     setFilename(match ? match[1] : "benefits_form.jpg")
     setResultUrl(url)
     setStatus("done")
+  }
+
+  async function loadPreliminaryPreview(fields: Record<string, unknown>) {
+    try {
+      const res = await fetch("/api/render", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          passcode,
+          fields,
+          annotations: { primaryStatus: "none", carrier: "none", flags: [] },
+        }),
+      })
+      if (!res.ok) return
+      const blob = await res.blob()
+      setPreviewUrl(URL.createObjectURL(blob))
+    } catch {
+      // The questions remain usable if the local-only preliminary render fails.
+    }
   }
 
   async function handleResolvedRender() {
@@ -340,8 +362,16 @@ export default function Home() {
           <div className="mt-6 space-y-4 rounded-xl border border-amber-300 bg-amber-50 p-5">
             <div>
               <h2 className="font-semibold text-amber-950">Review required before rendering</h2>
-              <p className="mt-1 text-sm text-amber-800">Choose the correct value for each conflict. This does not make another OpenAI request.</p>
+              <p className="mt-1 text-sm text-amber-800">Review the preliminary form, then answer the questions below. This does not make another OpenAI request.</p>
             </div>
+
+            {previewUrl && (
+              <div className="rounded-lg border border-amber-200 bg-white p-3">
+                <h3 className="mb-1 text-sm font-semibold text-gray-900">Preliminary JPG Preview</h3>
+                <p className="mb-3 text-xs text-gray-500">This preview shows the harvested values before your answers are applied.</p>
+                <img src={previewUrl} alt="Preliminary benefits form" className="w-full rounded border border-gray-200" />
+              </div>
+            )}
 
 
             <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
@@ -423,7 +453,7 @@ export default function Home() {
                         checked={choices[index] === "__custom__"}
                         onChange={() => setChoices((current) => ({ ...current, [index]: "__custom__" }))}
                       />
-                      Use custom value
+                      CUSTOM
                     </label>
                   )}
                   {conflict.field_key !== "waiting_period" && choices[index] === "__custom__" && (
@@ -493,6 +523,7 @@ export default function Home() {
               onClick={() => {
                 setStatus("idle")
                 setResultUrl("")
+                setPreviewUrl("")
                 setCostUsd(null)
                 setFullFile(null)
                 setBasicFile(null)
