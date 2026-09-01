@@ -11,7 +11,7 @@ const CIRCLE_THICKNESS = 3
 
 export type PrimaryStatus = "primary" | "secondary" | "none"
 export type CarrierBox = "delta" | "dpo_cap" | "metlife" | "guardian" | "none"
-export type HeaderFlag = "oon_auth" | "ok_for_hyg" | "col_pct" | "col_ded" | "col_dpo_cap" | "col_hyg" | "col_full_ucr"
+export type HeaderFlag = "oon_auth" | "ok_for_hyg" | "col_pct" | "col_ded" | "col_dpo_cap" | "col_hyg" | "col_full_ucr" | "prev_col_pct_ded" | "fmx_col_pct_ded" | "pas_col_pct_ded" | "px_ex_freq" | "prob_d140_freq" | "bwx_freq" | "oon_ins_plan_red_box" | "fluoride_freq"
 
 export interface HeaderAnnotations {
   primaryStatus: PrimaryStatus
@@ -124,6 +124,27 @@ export async function renderForm(
       strokeRoundedBox(ctx, HEADER_BOXES[annotations.carrier])
     }
     for (const flag of annotations.flags) {
+      if (flag === "px_ex_freq") {
+        ctx.font = `${FONT_SIZE}px DejaVuSans`
+        const valueWidth = ctx.measureText(fields.freq_exam_prophy || "").width
+        const rightEdge = Math.min(480, Math.max(220, 111 + valueWidth + 10))
+        strokeRoundedBox(ctx, { x: 20, y: 1443, width: rightEdge - 20, height: 45 })
+        continue
+      }
+      if (flag === "prob_d140_freq") {
+        ctx.font = `${FONT_SIZE}px DejaVuSans`
+        const valueWidth = ctx.measureText(fields.freq_prob_d140 || "").width
+        const rightEdge = Math.min(350, Math.max(245, 141 + valueWidth + 10))
+        strokeRoundedBox(ctx, { x: 20, y: 1490, width: rightEdge - 20, height: 45 })
+        continue
+      }
+      if (flag === "bwx_freq") {
+        ctx.font = `${FONT_SIZE}px DejaVuSans`
+        const valueWidth = ctx.measureText(fields.freq_bwx || "").width
+        const rightEdge = Math.min(1200, Math.max(1160, 1071 + valueWidth + 10))
+        strokeRoundedBox(ctx, { x: 972, y: 1443, width: rightEdge - 972, height: 45 })
+        continue
+      }
       strokeRoundedBox(ctx, HEADER_BOXES[flag])
     }
   }

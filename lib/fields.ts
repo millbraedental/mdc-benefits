@@ -57,7 +57,7 @@ export const FIELDS: FieldDef[] = [
   { key: "major_ded",            x: 769,  y: 948,  x2: 805  },
 
   // Prev apply max
-  { key: "prev_apply_max",       x: 211,  y: 1076, x2: 283  },
+  { key: "prev_apply_max",       x: 211,  y: 1070, x2: 283  },
 
   // Procedure codes row 1
   { key: "fmx_pct",              x: 93,   y: 1011, x2: 136  },
@@ -72,7 +72,7 @@ export const FIELDS: FieldDef[] = [
   { key: "perio_ded",            x: 511,  y: 1068, x2: 568  },
   { key: "endo_pct",             x: 653,  y: 1068, x2: 709  },
   { key: "endo_ded",             x: 780,  y: 1068, x2: 823  },
-  { key: "ng_value",             x: 1108, y: 1068, x2: 1179 },
+  { key: "ng_value",             x: 1108, y: 1062, x2: 1179 },
 
   // Posterior comps / crown row
   { key: "post_comp_pct",        x: 376,  y: 1158, x2: 457  },
@@ -136,4 +136,9 @@ export const HEADER_BOXES = {
   col_dpo_cap: { x: 566, y: 175, width: 166, height: 36 },
   col_hyg:     { x: 746, y: 175, width: 119, height: 36 },
   col_full_ucr:{ x: 874, y: 175, width: 169, height: 36 },
+  prev_col_pct_ded: { x: 20, y: 917, width: 240, height: 55 },
+  fmx_col_pct_ded:  { x: 20, y: 980, width: 240, height: 55 },
+  pas_col_pct_ded:  { x: 267, y: 980, width: 214, height: 55 },
+  oon_ins_plan_red_box: { x: 829, y: 95, width: 266, height: 56 },
+  fluoride_freq: { x: 980, y: 1391, width: 220, height: 51 },
 } as const

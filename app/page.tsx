@@ -19,7 +19,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.20"
+const APP_VERSION = "V1.31"
 
 const HEADER_FLAGS = [
   ["oon_auth", "?OON? - AUTH"],
@@ -29,6 +29,14 @@ const HEADER_FLAGS = [
   ["col_dpo_cap", "COL DPO-CAP"],
   ["col_hyg", "COL HYG!"],
   ["col_full_ucr", "COL FULL UCR"],
+  ["prev_col_pct_ded", "COL % PREV/COL DED PREV"],
+  ["fmx_col_pct_ded", "FMX % / FMX DED"],
+  ["pas_col_pct_ded", "PAs % / PA DED"],
+  ["px_ex_freq", "PX/EX FREQ"],
+  ["prob_d140_freq", "PROB D140 FREQ"],
+  ["bwx_freq", "BWX FREQ"],
+  ["oon_ins_plan_red_box", "OON INS PLAN RED BOX (Up/Right)"],
+  ["fluoride_freq", "FLUORIDE FREQ"],
 ] as const
 
 export default function Home() {
@@ -48,7 +56,7 @@ export default function Home() {
   const [customValues, setCustomValues] = useState<Record<number, string>>({})
   const [reviewNotes, setReviewNotes] = useState("")
   const [extractionReviewReasons, setExtractionReviewReasons] = useState<string[]>([])
-  const [primaryStatus, setPrimaryStatus] = useState("")
+  const [primaryStatus, setPrimaryStatus] = useState("none")
   const [carrier, setCarrier] = useState("")
   const [headerFlags, setHeaderFlags] = useState<string[]>([])
   const fullInputRef = useRef<HTMLInputElement>(null)
@@ -85,7 +93,7 @@ export default function Home() {
     setCustomValues({})
     setReviewNotes("")
     setExtractionReviewReasons([])
-    setPrimaryStatus("")
+    setPrimaryStatus("none")
     setCarrier("")
     setHeaderFlags([])
 
@@ -533,7 +541,7 @@ export default function Home() {
                 setCustomValues({})
                 setReviewNotes("")
                 setExtractionReviewReasons([])
-                setPrimaryStatus("")
+                setPrimaryStatus("none")
                 setCarrier("")
                 setHeaderFlags([])
                 if (fullInputRef.current) fullInputRef.current.value = ""
