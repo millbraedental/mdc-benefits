@@ -128,21 +128,21 @@ export async function renderForm(
         ctx.font = `${FONT_SIZE}px DejaVuSans`
         const valueWidth = ctx.measureText(fields.freq_exam_prophy || "").width
         const rightEdge = Math.min(480, Math.max(220, 111 + valueWidth + 10))
-        strokeRoundedBox(ctx, { x: 20, y: 1443, width: rightEdge - 20, height: 45 })
+        strokeRoundedBox(ctx, { x: 20, y: 1444, width: rightEdge - 20, height: 41 })
         continue
       }
       if (flag === "prob_d140_freq") {
         ctx.font = `${FONT_SIZE}px DejaVuSans`
         const valueWidth = ctx.measureText(fields.freq_prob_d140 || "").width
         const rightEdge = Math.min(350, Math.max(245, 141 + valueWidth + 10))
-        strokeRoundedBox(ctx, { x: 20, y: 1490, width: rightEdge - 20, height: 45 })
+        strokeRoundedBox(ctx, { x: 20, y: 1492, width: rightEdge - 20, height: 43 })
         continue
       }
       if (flag === "bwx_freq") {
         ctx.font = `${FONT_SIZE}px DejaVuSans`
         const valueWidth = ctx.measureText(fields.freq_bwx || "").width
         const rightEdge = Math.min(1200, Math.max(1160, 1071 + valueWidth + 10))
-        strokeRoundedBox(ctx, { x: 972, y: 1443, width: rightEdge - 972, height: 45 })
+        strokeRoundedBox(ctx, { x: 972, y: 1445, width: rightEdge - 972, height: 41 })
         continue
       }
       strokeRoundedBox(ctx, HEADER_BOXES[flag])

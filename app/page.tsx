@@ -19,7 +19,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.31"
+const APP_VERSION = "V1.33"
 
 const HEADER_FLAGS = [
   ["oon_auth", "?OON? - AUTH"],
@@ -367,7 +367,7 @@ export default function Home() {
         )}
 
         {status === "review" && (
-          <div className="mt-6 space-y-4 rounded-xl border border-amber-300 bg-amber-50 p-5">
+          <div className="relative left-1/2 mt-6 w-[min(1100px,calc(100vw-3rem))] -translate-x-1/2 space-y-4 rounded-xl border border-amber-300 bg-amber-50 p-5">
             <div>
               <h2 className="font-semibold text-amber-950">Review required before rendering</h2>
               <p className="mt-1 text-sm text-amber-800">Review the preliminary form, then answer the questions below. This does not make another OpenAI request.</p>
@@ -375,7 +375,17 @@ export default function Home() {
 
             {previewUrl && (
               <div className="rounded-lg border border-amber-200 bg-white p-3">
-                <h3 className="mb-1 text-sm font-semibold text-gray-900">Preliminary JPG Preview</h3>
+                <div className="mb-1 flex items-center justify-between gap-3">
+                  <h3 className="text-sm font-semibold text-gray-900">Preliminary JPG Preview</h3>
+                  <a
+                    href={previewUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs font-semibold text-blue-700 hover:text-blue-900 hover:underline"
+                  >
+                    Open full size
+                  </a>
+                </div>
                 <p className="mb-3 text-xs text-gray-500">This preview shows the harvested values before your answers are applied.</p>
                 <img src={previewUrl} alt="Preliminary benefits form" className="w-full rounded border border-gray-200" />
               </div>
