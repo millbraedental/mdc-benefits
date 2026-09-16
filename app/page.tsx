@@ -19,7 +19,13 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.35"
+const APP_VERSION = "V1.36"
+
+type CobChoice = "harvested" | "standard" | "non_dup" | "carve_out" | "yes" | "no" | "unknown" | "custom"
+
+function isNonDupCob(value: unknown) {
+  return /NON[\s-]*(?:DUP|DUPLICATION)/i.test(String(value ?? ""))
+}
 
 const HEADER_FLAGS = [
   ["oon_auth", "?OON? - AUTH"],
@@ -62,6 +68,9 @@ export default function Home() {
   const [groupNumberChoice, setGroupNumberChoice] = useState<"harvested" | "append" | "custom">("harvested")
   const [groupNumberAppend, setGroupNumberAppend] = useState("")
   const [groupNumberCustom, setGroupNumberCustom] = useState("")
+  const [cobChoice, setCobChoice] = useState<CobChoice>("harvested")
+  const [cobCustom, setCobCustom] = useState("")
+  const [showNonDupAlert, setShowNonDupAlert] = useState(false)
   const fullInputRef = useRef<HTMLInputElement>(null)
   const basicInputRef = useRef<HTMLInputElement>(null)
 
@@ -102,6 +111,9 @@ export default function Home() {
     setGroupNumberChoice("harvested")
     setGroupNumberAppend("")
     setGroupNumberCustom("")
+    setCobChoice("harvested")
+    setCobCustom("")
+    setShowNonDupAlert(false)
 
     const formData = new FormData()
     formData.append("passcode", passcode)
@@ -125,6 +137,7 @@ export default function Home() {
           })
         ))
         setExtractionReviewReasons(json.reviewReasons)
+        setShowNonDupAlert(isNonDupCob(json.fields.cob))
         setCostUsd(json.costUsd)
         setStatus("review")
         await loadPreliminaryPreview(json.fields)
@@ -195,6 +208,7 @@ export default function Home() {
     const notes: string[] = [...extractionReviewReasons]
 
     for (const [index, conflict] of conflicts.entries()) {
+      if (conflict.field_key === "cob") continue
       const choice = choices[index]
       const selectedValue = choice === "__custom__" ? customValues[index]?.trim() : choice
       if (!selectedValue) {
@@ -236,6 +250,32 @@ export default function Home() {
       `Number printed: ${resolvedGroupNumber}`,
     ].join("\n"))
 
+    const harvestedCob = String(pendingFields.cob ?? "").trim()
+    const cobValues: Record<Exclude<CobChoice, "harvested" | "custom">, string> = {
+      standard: "Standard",
+      non_dup: "NON-DUP",
+      carve_out: "CARVE OUT",
+      yes: "YES",
+      no: "NO",
+      unknown: "UNKNOWN",
+    }
+    const resolvedCob = cobChoice === "harvested"
+      ? harvestedCob
+      : cobChoice === "custom"
+        ? cobCustom.trim()
+        : cobValues[cobChoice]
+    if (!resolvedCob) {
+      setErrorMsg("Please enter the custom Coordination of Benefits value.")
+      return
+    }
+    resolvedFields.cob = resolvedCob
+    notes.push([
+      "Coordination of Benefits Confirmation",
+      `Harvested value: ${harvestedCob}`,
+      `Value printed: ${resolvedCob}`,
+      `Red NON DUPLICATION alert: ${showNonDupAlert ? "Yes" : "No"}`,
+    ].join("\n"))
+
     setStatus("rendering")
     setErrorMsg("")
     setReviewNotes(notes.join("\n\n"))
@@ -247,7 +287,7 @@ export default function Home() {
         body: JSON.stringify({
           passcode,
           fields: resolvedFields,
-          annotations: { primaryStatus, carrier, flags: headerFlags },
+          annotations: { primaryStatus, carrier, flags: headerFlags, nonDupAlert: showNonDupAlert },
         }),
       })
 
@@ -467,7 +507,7 @@ export default function Home() {
               </div>
             </fieldset>
 
-            {conflicts.map((conflict, index) => (
+            {conflicts.map((conflict, index) => conflict.field_key === "cob" ? null : (
               <fieldset key={`${conflict.field_key}-${index}`} className="rounded-lg border border-amber-200 bg-white p-4">
                 <legend className="px-1 text-sm font-semibold text-gray-900">{conflict.label}</legend>
                 <p className="mb-3 text-sm text-gray-700">{conflict.question}</p>
@@ -577,6 +617,55 @@ export default function Home() {
               </div>
             </fieldset>
 
+            <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
+              <legend className="px-1 text-sm font-semibold text-gray-900">Coordination of Benefits Confirmation</legend>
+              <p className="mb-3 text-sm text-gray-700">Confirm the Coordination of Benefits value to print.</p>
+              <label className="mb-4 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                <input
+                  type="checkbox"
+                  checked={showNonDupAlert}
+                  onChange={(event) => setShowNonDupAlert(event.target.checked)}
+                />
+                Add red “NON DUPLICATION OF BENEFITS!!!” warning at the top
+              </label>
+              <div className="space-y-3">
+                {([
+                  ["harvested", `Harvested value: ${String(pendingFields?.cob ?? "")}`],
+                  ["standard", "Standard"],
+                  ["non_dup", "NON-DUP"],
+                  ["carve_out", "CARVE OUT"],
+                  ["yes", "YES"],
+                  ["no", "NO"],
+                  ["unknown", "UNKNOWN"],
+                  ["custom", "CUSTOM"],
+                ] as const).map(([value, label]) => (
+                  <div key={value}>
+                    <label className="flex items-center gap-2 text-sm text-gray-800">
+                      <input
+                        type="radio"
+                        name="cob-choice"
+                        checked={cobChoice === value}
+                        onChange={() => {
+                          setCobChoice(value)
+                          if (value === "non_dup") setShowNonDupAlert(true)
+                        }}
+                      />
+                      {label}
+                    </label>
+                    {value === "custom" && cobChoice === "custom" && (
+                      <input
+                        type="text"
+                        value={cobCustom}
+                        onChange={(event) => setCobCustom(event.target.value)}
+                        placeholder="Enter the Coordination of Benefits value"
+                        className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+
             {errorMsg && <p className="text-sm font-medium text-red-700">{errorMsg}</p>}
             <button
               type="button"
@@ -647,6 +736,9 @@ export default function Home() {
                 setGroupNumberChoice("harvested")
                 setGroupNumberAppend("")
                 setGroupNumberCustom("")
+                setCobChoice("harvested")
+                setCobCustom("")
+                setShowNonDupAlert(false)
                 if (fullInputRef.current) fullInputRef.current.value = ""
                 if (basicInputRef.current) basicInputRef.current.value = ""
               }}

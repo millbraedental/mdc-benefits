@@ -17,6 +17,7 @@ export interface HeaderAnnotations {
   primaryStatus: PrimaryStatus
   carrier: CarrierBox
   flags: HeaderFlag[]
+  nonDupAlert?: boolean
 }
 
 function strokeRoundedBox(
@@ -225,12 +226,18 @@ export async function renderForm(
   // --- COB Alert ---
   const cob = fields.cob?.trim()
   {
-    const alertText =
-      cob === "Standard"
-        ? null
-        : !cob || cob === "MISSING" || cob === "REVIEW"
+    const normalizedCob = cob?.toUpperCase() ?? ""
+    const cobIsUnknown = !cob || ["MISSING", "REVIEW", "UNKNOWN", "PLEASE REVIEW"].includes(normalizedCob)
+    const cobIsNonDup = /NON[\s-]*(?:DUP|DUPLICATION)/.test(normalizedCob)
+    const alertText = annotations?.nonDupAlert === true
+      ? "NON DUPLICATION OF BENEFITS!!!"
+      : annotations?.nonDupAlert === false
+        ? (cobIsUnknown ? "COB-UNKNOWN" : null)
+        : cobIsUnknown
           ? "COB-UNKNOWN"
-          : "NON DUPLICATION OF BENEFITS!!!"
+          : cobIsNonDup
+            ? "NON DUPLICATION OF BENEFITS!!!"
+            : null
 
     if (alertText) {
       ctx.fillStyle = "rgb(220,0,0)"
