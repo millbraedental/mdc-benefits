@@ -23,7 +23,7 @@ function validAnnotations(value: unknown): value is HeaderAnnotations {
   return typeof record.primaryStatus === "string" && primaryStatuses.has(record.primaryStatus) &&
     typeof record.carrier === "string" && carriers.has(record.carrier) &&
     Array.isArray(record.flags) && record.flags.every((flag) => typeof flag === "string" && flags.has(flag)) &&
-    (record.nonDupAlert === undefined || typeof record.nonDupAlert === "boolean")
+    (record.cobAlertText === undefined || (typeof record.cobAlertText === "string" && record.cobAlertText.length <= 200))
 }
 
 export async function POST(req: NextRequest) {

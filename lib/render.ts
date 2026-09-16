@@ -17,7 +17,7 @@ export interface HeaderAnnotations {
   primaryStatus: PrimaryStatus
   carrier: CarrierBox
   flags: HeaderFlag[]
-  nonDupAlert?: boolean
+  cobAlertText?: string
 }
 
 function strokeRoundedBox(
@@ -229,20 +229,26 @@ export async function renderForm(
     const normalizedCob = cob?.toUpperCase() ?? ""
     const cobIsUnknown = !cob || ["MISSING", "REVIEW", "UNKNOWN", "PLEASE REVIEW"].includes(normalizedCob)
     const cobIsNonDup = /NON[\s-]*(?:DUP|DUPLICATION)/.test(normalizedCob)
-    const alertText = annotations?.nonDupAlert === true
-      ? "NON DUPLICATION OF BENEFITS!!!"
-      : annotations?.nonDupAlert === false
-        ? (cobIsUnknown ? "COB-UNKNOWN" : null)
-        : cobIsUnknown
-          ? "COB-UNKNOWN"
-          : cobIsNonDup
-            ? "NON DUPLICATION OF BENEFITS!!!"
-            : null
+    const automaticAlertText = cobIsUnknown
+      ? "COB-UNKNOWN"
+      : cobIsNonDup
+        ? "NON DUPLICATION OF BENEFITS!!!"
+        : /CARVE[\s-]*OUT/.test(normalizedCob)
+          ? "CARVE OUT COB"
+          : normalizedCob === "MOB" || /MAINTENANCE OF BENEFITS/.test(normalizedCob)
+            ? "MAINTENANCE OF BENEFITS COB"
+            : ["NO COB", "DOES NOT COORDINATE", "NO COORDINATION OF BENEFITS"].includes(normalizedCob)
+              ? "NO COORDINATION OF BENEFITS"
+              : null
+    const alertText = annotations?.cobAlertText !== undefined
+      ? annotations.cobAlertText.trim() || null
+      : automaticAlertText
 
     if (alertText) {
       ctx.fillStyle = "rgb(220,0,0)"
-      ctx.font = `bold ${FONT_SIZE}px DejaVuSansBold`
-      ctx.fillText(alertText, COB_ALERT.x, COB_ALERT.y)
+      const fitted = fitWrappedText(ctx, alertText, COB_ALERT.x2 - COB_ALERT.x, 1, FONT_SIZE, 10)
+      ctx.font = `bold ${fitted.fontSize}px DejaVuSansBold`
+      ctx.fillText(fitted.lines[0], COB_ALERT.x, COB_ALERT.y)
     }
   }
 

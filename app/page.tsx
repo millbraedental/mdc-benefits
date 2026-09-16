@@ -19,12 +19,18 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.36"
+const APP_VERSION = "V1.37"
 
-type CobChoice = "harvested" | "standard" | "non_dup" | "carve_out" | "yes" | "no" | "unknown" | "custom"
+type CobChoice = "harvested" | "standard" | "non_dup" | "carve_out" | "mob" | "no_cob" | "unknown" | "custom"
 
-function isNonDupCob(value: unknown) {
-  return /NON[\s-]*(?:DUP|DUPLICATION)/i.test(String(value ?? ""))
+function predefinedCobAlert(value: unknown) {
+  const normalized = String(value ?? "").trim().toUpperCase()
+  if (!normalized || ["MISSING", "REVIEW", "UNKNOWN", "PLEASE REVIEW"].includes(normalized)) return "COB-UNKNOWN"
+  if (/NON[\s-]*(?:DUP|DUPLICATION)/.test(normalized)) return "NON DUPLICATION OF BENEFITS!!!"
+  if (/CARVE[\s-]*OUT/.test(normalized)) return "CARVE OUT COB"
+  if (normalized === "MOB" || /MAINTENANCE OF BENEFITS/.test(normalized)) return "MAINTENANCE OF BENEFITS COB"
+  if (["NO COB", "DOES NOT COORDINATE", "NO COORDINATION OF BENEFITS"].includes(normalized)) return "NO COORDINATION OF BENEFITS"
+  return ""
 }
 
 const HEADER_FLAGS = [
@@ -70,7 +76,7 @@ export default function Home() {
   const [groupNumberCustom, setGroupNumberCustom] = useState("")
   const [cobChoice, setCobChoice] = useState<CobChoice>("harvested")
   const [cobCustom, setCobCustom] = useState("")
-  const [showNonDupAlert, setShowNonDupAlert] = useState(false)
+  const [showSelectedCobAlert, setShowSelectedCobAlert] = useState(false)
   const fullInputRef = useRef<HTMLInputElement>(null)
   const basicInputRef = useRef<HTMLInputElement>(null)
 
@@ -113,7 +119,7 @@ export default function Home() {
     setGroupNumberCustom("")
     setCobChoice("harvested")
     setCobCustom("")
-    setShowNonDupAlert(false)
+    setShowSelectedCobAlert(false)
 
     const formData = new FormData()
     formData.append("passcode", passcode)
@@ -137,7 +143,7 @@ export default function Home() {
           })
         ))
         setExtractionReviewReasons(json.reviewReasons)
-        setShowNonDupAlert(isNonDupCob(json.fields.cob))
+        setShowSelectedCobAlert(Boolean(predefinedCobAlert(json.fields.cob)))
         setCostUsd(json.costUsd)
         setStatus("review")
         await loadPreliminaryPreview(json.fields)
@@ -255,8 +261,8 @@ export default function Home() {
       standard: "Standard",
       non_dup: "NON-DUP",
       carve_out: "CARVE OUT",
-      yes: "YES",
-      no: "NO",
+      mob: "MOB",
+      no_cob: "NO COB",
       unknown: "UNKNOWN",
     }
     const resolvedCob = cobChoice === "harvested"
@@ -269,11 +275,16 @@ export default function Home() {
       return
     }
     resolvedFields.cob = resolvedCob
+    const cobAlertText = cobChoice === "harvested" || cobChoice === "custom"
+      ? showSelectedCobAlert
+        ? predefinedCobAlert(resolvedCob) || resolvedCob
+        : ""
+      : predefinedCobAlert(resolvedCob)
     notes.push([
       "Coordination of Benefits Confirmation",
       `Harvested value: ${harvestedCob}`,
       `Value printed: ${resolvedCob}`,
-      `Red NON DUPLICATION alert: ${showNonDupAlert ? "Yes" : "No"}`,
+      `Red top warning: ${cobAlertText || "None"}`,
     ].join("\n"))
 
     setStatus("rendering")
@@ -287,7 +298,7 @@ export default function Home() {
         body: JSON.stringify({
           passcode,
           fields: resolvedFields,
-          annotations: { primaryStatus, carrier, flags: headerFlags, nonDupAlert: showNonDupAlert },
+          annotations: { primaryStatus, carrier, flags: headerFlags, cobAlertText },
         }),
       })
 
@@ -620,22 +631,14 @@ export default function Home() {
             <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
               <legend className="px-1 text-sm font-semibold text-gray-900">Coordination of Benefits Confirmation</legend>
               <p className="mb-3 text-sm text-gray-700">Confirm the Coordination of Benefits value to print.</p>
-              <label className="mb-4 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
-                <input
-                  type="checkbox"
-                  checked={showNonDupAlert}
-                  onChange={(event) => setShowNonDupAlert(event.target.checked)}
-                />
-                Add red “NON DUPLICATION OF BENEFITS!!!” warning at the top
-              </label>
               <div className="space-y-3">
                 {([
                   ["harvested", `Harvested value: ${String(pendingFields?.cob ?? "")}`],
                   ["standard", "Standard"],
                   ["non_dup", "NON-DUP"],
                   ["carve_out", "CARVE OUT"],
-                  ["yes", "YES"],
-                  ["no", "NO"],
+                  ["mob", "Maintenance of Benefits (MOB)"],
+                  ["no_cob", "No COB / Does Not Coordinate"],
                   ["unknown", "UNKNOWN"],
                   ["custom", "CUSTOM"],
                 ] as const).map(([value, label]) => (
@@ -645,10 +648,7 @@ export default function Home() {
                         type="radio"
                         name="cob-choice"
                         checked={cobChoice === value}
-                        onChange={() => {
-                          setCobChoice(value)
-                          if (value === "non_dup") setShowNonDupAlert(true)
-                        }}
+                        onChange={() => setCobChoice(value)}
                       />
                       {label}
                     </label>
@@ -660,6 +660,16 @@ export default function Home() {
                         placeholder="Enter the Coordination of Benefits value"
                         className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900"
                       />
+                    )}
+                    {(value === "harvested" || value === "custom") && cobChoice === value && (
+                      <label className="mt-2 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                        <input
+                          type="checkbox"
+                          checked={showSelectedCobAlert}
+                          onChange={(event) => setShowSelectedCobAlert(event.target.checked)}
+                        />
+                        Add this value as red text at the top
+                      </label>
                     )}
                   </div>
                 ))}
@@ -738,7 +748,7 @@ export default function Home() {
                 setGroupNumberCustom("")
                 setCobChoice("harvested")
                 setCobCustom("")
-                setShowNonDupAlert(false)
+                setShowSelectedCobAlert(false)
                 if (fullInputRef.current) fullInputRef.current.value = ""
                 if (basicInputRef.current) basicInputRef.current.value = ""
               }}
