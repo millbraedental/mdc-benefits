@@ -19,9 +19,12 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.37"
+const APP_VERSION = "V1.38"
 
 type CobChoice = "harvested" | "standard" | "non_dup" | "carve_out" | "mob" | "no_cob" | "unknown" | "custom"
+type IncentiveChoice = "harvested" | "custom" | "blank"
+type OrthoMissingChoice = "auth" | "missing" | "custom"
+type WaitingPeriodChoice = "harvested" | "custom" | "review"
 
 function predefinedCobAlert(value: unknown) {
   const normalized = String(value ?? "").trim().toUpperCase()
@@ -31,6 +34,12 @@ function predefinedCobAlert(value: unknown) {
   if (normalized === "MOB" || /MAINTENANCE OF BENEFITS/.test(normalized)) return "MAINTENANCE OF BENEFITS COB"
   if (["NO COB", "DOES NOT COORDINATE", "NO COORDINATION OF BENEFITS"].includes(normalized)) return "NO COORDINATION OF BENEFITS"
   return ""
+}
+
+function orthoDataIsMissing(fields: Record<string, unknown> | null) {
+  if (!fields) return false
+  const missing = (value: unknown) => !String(value ?? "").trim() || String(value).trim().toUpperCase() === "MISSING"
+  return missing(fields.ortho_max) || missing(fields.ortho_pct)
 }
 
 const HEADER_FLAGS = [
@@ -48,6 +57,7 @@ const HEADER_FLAGS = [
   ["prob_d140_freq", "PROB D140 FREQ"],
   ["bwx_freq", "BWX FREQ"],
   ["oon_ins_plan_red_box", "OON INS PLAN RED BOX (Up/Right)"],
+  ["incentive_plan_red_box", "INCENTIVE PLAN RED BOX"],
   ["fluoride_freq", "FLUORIDE FREQ"],
 ] as const
 
@@ -77,6 +87,16 @@ export default function Home() {
   const [cobChoice, setCobChoice] = useState<CobChoice>("harvested")
   const [cobCustom, setCobCustom] = useState("")
   const [showSelectedCobAlert, setShowSelectedCobAlert] = useState(false)
+  const [incentiveChoice, setIncentiveChoice] = useState<IncentiveChoice>("harvested")
+  const [incentiveCustom, setIncentiveCustom] = useState("")
+  const [incentiveAlert, setIncentiveAlert] = useState(false)
+  const [incentiveRedBox, setIncentiveRedBox] = useState(false)
+  const [orthoMissingChoice, setOrthoMissingChoice] = useState<OrthoMissingChoice>("auth")
+  const [orthoCustom, setOrthoCustom] = useState("")
+  const [orthoCustomColor, setOrthoCustomColor] = useState<"red" | "black">("red")
+  const [hygSixMonthAlert, setHygSixMonthAlert] = useState(false)
+  const [waitingPeriodChoice, setWaitingPeriodChoice] = useState<WaitingPeriodChoice>("harvested")
+  const [waitingPeriodCustom, setWaitingPeriodCustom] = useState("")
   const fullInputRef = useRef<HTMLInputElement>(null)
   const basicInputRef = useRef<HTMLInputElement>(null)
 
@@ -120,6 +140,16 @@ export default function Home() {
     setCobChoice("harvested")
     setCobCustom("")
     setShowSelectedCobAlert(false)
+    setIncentiveChoice("harvested")
+    setIncentiveCustom("")
+    setIncentiveAlert(false)
+    setIncentiveRedBox(false)
+    setOrthoMissingChoice("auth")
+    setOrthoCustom("")
+    setOrthoCustomColor("red")
+    setHygSixMonthAlert(false)
+    setWaitingPeriodChoice("harvested")
+    setWaitingPeriodCustom("")
 
     const formData = new FormData()
     formData.append("passcode", passcode)
@@ -214,7 +244,7 @@ export default function Home() {
     const notes: string[] = [...extractionReviewReasons]
 
     for (const [index, conflict] of conflicts.entries()) {
-      if (conflict.field_key === "cob") continue
+      if (conflict.field_key === "cob" || conflict.field_key === "waiting_period") continue
       const choice = choices[index]
       const selectedValue = choice === "__custom__" ? customValues[index]?.trim() : choice
       if (!selectedValue) {
@@ -287,6 +317,66 @@ export default function Home() {
       `Red top warning: ${cobAlertText || "None"}`,
     ].join("\n"))
 
+    const harvestedIncentive = String(pendingFields.incentive_plan ?? "UNKNOWN").trim()
+    const resolvedIncentive = incentiveChoice === "harvested"
+      ? harvestedIncentive
+      : incentiveChoice === "custom"
+        ? incentiveCustom.trim()
+        : ""
+    if (incentiveChoice === "custom" && !resolvedIncentive) {
+      setErrorMsg("Please enter the custom incentive-plan value.")
+      return
+    }
+    resolvedFields.incentive_plan = resolvedIncentive
+    notes.push([
+      "Incentive Plan Confirmation",
+      `Harvested value: ${harvestedIncentive}`,
+      `Value printed: ${resolvedIncentive}`,
+      `Red INCENTIVE label: ${incentiveAlert ? "Yes" : "No"}`,
+      `Red box around Incentive Plan field: ${incentiveRedBox ? "Yes" : "No"}`,
+    ].join("\n"))
+
+    const harvestedWaitingPeriod = String(pendingFields.waiting_period ?? "").trim()
+    const resolvedWaitingPeriod = waitingPeriodChoice === "harvested"
+      ? harvestedWaitingPeriod
+      : waitingPeriodChoice === "review"
+        ? "REVIEW"
+        : waitingPeriodCustom.trim()
+    if (waitingPeriodChoice === "custom" && !resolvedWaitingPeriod) {
+      setErrorMsg("Please enter the custom waiting-period value.")
+      return
+    }
+    resolvedFields.waiting_period = resolvedWaitingPeriod
+    notes.push([
+      "Waiting Period Confirmation",
+      `Harvested value: ${harvestedWaitingPeriod}`,
+      `Source: ${String(pendingFields.waiting_period_source ?? "MISSING")}`,
+      `Value printed: ${resolvedWaitingPeriod}`,
+    ].join("\n"))
+
+    let orthoColor: "red" | "black" | undefined
+    if (orthoDataIsMissing(pendingFields)) {
+      const resolvedOrtho = orthoMissingChoice === "auth"
+        ? "AUTH"
+        : orthoMissingChoice === "missing"
+          ? "MISSING"
+          : orthoCustom.trim()
+      if (orthoMissingChoice === "custom" && !resolvedOrtho) {
+        setErrorMsg("Please enter the custom Ortho value.")
+        return
+      }
+      orthoColor = orthoMissingChoice === "custom" ? orthoCustomColor : "red"
+      resolvedFields.ortho_max = resolvedOrtho
+      resolvedFields.ortho_pct = ""
+      notes.push([
+        "Missing Ortho Confirmation",
+        `Harvested Ortho MAX: ${String(pendingFields.ortho_max ?? "")}`,
+        `Harvested Ortho %: ${String(pendingFields.ortho_pct ?? "")}`,
+        `Value printed: ${resolvedOrtho}`,
+        `Color: ${orthoColor}`,
+      ].join("\n"))
+    }
+
     setStatus("rendering")
     setErrorMsg("")
     setReviewNotes(notes.join("\n\n"))
@@ -298,7 +388,15 @@ export default function Home() {
         body: JSON.stringify({
           passcode,
           fields: resolvedFields,
-          annotations: { primaryStatus, carrier, flags: headerFlags, cobAlertText },
+          annotations: {
+            primaryStatus,
+            carrier,
+            flags: [...headerFlags, ...(incentiveRedBox ? ["incentive_plan_red_box"] : [])],
+            cobAlertText,
+            incentiveAlert,
+            orthoColor,
+            hygSixMonthAlert,
+          },
         }),
       })
 
@@ -487,6 +585,38 @@ export default function Home() {
             </fieldset>
 
             <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
+              <legend className="px-1 text-sm font-semibold text-gray-900">Incentive Plan Confirmation</legend>
+              <p className="mb-3 text-sm text-gray-700">Is this an Incentive Plan?</p>
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-sm text-gray-800">
+                  <input type="radio" name="incentive-choice" checked={incentiveChoice === "harvested"} onChange={() => setIncentiveChoice("harvested")} />
+                  Harvested: <span className="font-semibold">{String(pendingFields?.incentive_plan ?? "UNKNOWN")}</span>
+                </label>
+                <div>
+                  <label className="flex items-center gap-2 text-sm text-gray-800">
+                    <input type="radio" name="incentive-choice" checked={incentiveChoice === "custom"} onChange={() => setIncentiveChoice("custom")} />
+                    CUSTOM
+                  </label>
+                  {incentiveChoice === "custom" && (
+                    <input type="text" value={incentiveCustom} onChange={(event) => setIncentiveCustom(event.target.value)} placeholder="Enter YES, NO, or another value" className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900" />
+                  )}
+                </div>
+                <label className="flex items-center gap-2 text-sm text-gray-800">
+                  <input type="radio" name="incentive-choice" checked={incentiveChoice === "blank"} onChange={() => setIncentiveChoice("blank")} />
+                  Leave field blank
+                </label>
+                <label className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                  <input type="checkbox" checked={incentiveRedBox} onChange={(event) => setIncentiveRedBox(event.target.checked)} />
+                  Add a red box around the Incentive Plan field
+                </label>
+                <label className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                  <input type="checkbox" checked={incentiveAlert} onChange={(event) => setIncentiveAlert(event.target.checked)} />
+                  Add red INCENTIVE at the top
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
               <legend className="px-1 text-sm font-semibold text-gray-900">Carrier</legend>
               <p className="mb-3 text-sm text-gray-700">Choose one red box.</p>
               <div className="space-y-2">
@@ -518,7 +648,15 @@ export default function Home() {
               </div>
             </fieldset>
 
-            {conflicts.map((conflict, index) => conflict.field_key === "cob" ? null : (
+            <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
+              <legend className="px-1 text-sm font-semibold text-gray-900">Hygiene Timing Warning</legend>
+              <label className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                <input type="checkbox" checked={hygSixMonthAlert} onChange={(event) => setHygSixMonthAlert(event.target.checked)} />
+                Add red “HYG 6 MONTHS + 1 DAY” at the top
+              </label>
+            </fieldset>
+
+            {conflicts.map((conflict, index) => conflict.field_key === "cob" || conflict.field_key === "waiting_period" ? null : (
               <fieldset key={`${conflict.field_key}-${index}`} className="rounded-lg border border-amber-200 bg-white p-4">
                 <legend className="px-1 text-sm font-semibold text-gray-900">{conflict.label}</legend>
                 <p className="mb-3 text-sm text-gray-700">{conflict.question}</p>
@@ -568,6 +706,67 @@ export default function Home() {
                 </div>
               </fieldset>
             ))}
+
+            <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
+              <legend className="px-1 text-sm font-semibold text-gray-900">Waiting Period Confirmation</legend>
+              <p className="mb-2 text-sm text-gray-700">Confirm what to print in the Waiting Period field.</p>
+              <p className="mb-3 text-xs text-gray-500">Source: {String(pendingFields?.waiting_period_source ?? "MISSING")}</p>
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-sm text-gray-800">
+                  <input type="radio" name="waiting-period-choice" checked={waitingPeriodChoice === "harvested"} onChange={() => setWaitingPeriodChoice("harvested")} />
+                  Harvested: <span className="font-semibold">{String(pendingFields?.waiting_period ?? "")}</span>
+                </label>
+                <div>
+                  <label className="flex items-center gap-2 text-sm text-gray-800">
+                    <input type="radio" name="waiting-period-choice" checked={waitingPeriodChoice === "custom"} onChange={() => setWaitingPeriodChoice("custom")} />
+                    CUSTOM
+                  </label>
+                  {waitingPeriodChoice === "custom" && (
+                    <input type="text" value={waitingPeriodCustom} onChange={(event) => setWaitingPeriodCustom(event.target.value)} placeholder="Enter the waiting-period value" className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900" />
+                  )}
+                </div>
+                <label className="flex items-center gap-2 text-sm text-gray-800">
+                  <input type="radio" name="waiting-period-choice" checked={waitingPeriodChoice === "review"} onChange={() => setWaitingPeriodChoice("review")} />
+                  REVIEW
+                </label>
+              </div>
+            </fieldset>
+
+            {orthoDataIsMissing(pendingFields) && (
+              <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
+                <legend className="px-1 text-sm font-semibold text-gray-900">Missing Ortho Information</legend>
+                <p className="mb-3 text-sm text-gray-700">Choose what to print in the Ortho MAX field.</p>
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-red-700">
+                    <input type="radio" name="ortho-missing-choice" checked={orthoMissingChoice === "auth"} onChange={() => setOrthoMissingChoice("auth")} />
+                    AUTH — red (default)
+                  </label>
+                  <label className="flex items-center gap-2 text-sm font-semibold text-red-700">
+                    <input type="radio" name="ortho-missing-choice" checked={orthoMissingChoice === "missing"} onChange={() => setOrthoMissingChoice("missing")} />
+                    MISSING — red
+                  </label>
+                  <div>
+                    <label className="flex items-center gap-2 text-sm text-gray-800">
+                      <input type="radio" name="ortho-missing-choice" checked={orthoMissingChoice === "custom"} onChange={() => setOrthoMissingChoice("custom")} />
+                      CUSTOM
+                    </label>
+                    {orthoMissingChoice === "custom" && (
+                      <div className="mt-2 space-y-2 pl-6">
+                        <input type="text" value={orthoCustom} onChange={(event) => setOrthoCustom(event.target.value)} placeholder="Enter the Ortho value" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900" />
+                        <div className="flex gap-4">
+                          <label className="flex items-center gap-2 text-sm font-semibold text-red-700">
+                            <input type="radio" name="ortho-custom-color" checked={orthoCustomColor === "red"} onChange={() => setOrthoCustomColor("red")} /> Red
+                          </label>
+                          <label className="flex items-center gap-2 text-sm text-gray-800">
+                            <input type="radio" name="ortho-custom-color" checked={orthoCustomColor === "black"} onChange={() => setOrthoCustomColor("black")} /> Black
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </fieldset>
+            )}
 
             <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
               <legend className="px-1 text-sm font-semibold text-gray-900">Group Number Confirmation</legend>
@@ -749,6 +948,16 @@ export default function Home() {
                 setCobChoice("harvested")
                 setCobCustom("")
                 setShowSelectedCobAlert(false)
+                setIncentiveChoice("harvested")
+                setIncentiveCustom("")
+                setIncentiveAlert(false)
+                setIncentiveRedBox(false)
+                setOrthoMissingChoice("auth")
+                setOrthoCustom("")
+                setOrthoCustomColor("red")
+                setHygSixMonthAlert(false)
+                setWaitingPeriodChoice("harvested")
+                setWaitingPeriodCustom("")
                 if (fullInputRef.current) fullInputRef.current.value = ""
                 if (basicInputRef.current) basicInputRef.current.value = ""
               }}

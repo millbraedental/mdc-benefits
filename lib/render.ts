@@ -11,13 +11,16 @@ const CIRCLE_THICKNESS = 3
 
 export type PrimaryStatus = "primary" | "secondary" | "none"
 export type CarrierBox = "delta" | "dpo_cap" | "metlife" | "guardian" | "none"
-export type HeaderFlag = "oon_auth" | "ok_for_hyg" | "col_pct" | "col_ded" | "col_dpo_cap" | "col_hyg" | "col_full_ucr" | "prev_col_pct_ded" | "fmx_col_pct_ded" | "pas_col_pct_ded" | "px_ex_freq" | "prob_d140_freq" | "bwx_freq" | "oon_ins_plan_red_box" | "fluoride_freq"
+export type HeaderFlag = "oon_auth" | "ok_for_hyg" | "col_pct" | "col_ded" | "col_dpo_cap" | "col_hyg" | "col_full_ucr" | "prev_col_pct_ded" | "fmx_col_pct_ded" | "pas_col_pct_ded" | "px_ex_freq" | "prob_d140_freq" | "bwx_freq" | "oon_ins_plan_red_box" | "incentive_plan_red_box" | "fluoride_freq"
 
 export interface HeaderAnnotations {
   primaryStatus: PrimaryStatus
   carrier: CarrierBox
   flags: HeaderFlag[]
   cobAlertText?: string
+  incentiveAlert?: boolean
+  orthoColor?: "red" | "black"
+  hygSixMonthAlert?: boolean
 }
 
 function strokeRoundedBox(
@@ -186,7 +189,8 @@ export async function renderForm(
       continue
     }
 
-    if (value === "MISSING") {
+    const isOrthoOverride = (field.key === "ortho_max" || field.key === "ortho_pct") && annotations?.orthoColor
+    if (value === "MISSING" && !isOrthoOverride) {
       ctx.strokeStyle = "rgb(220,0,0)"
       ctx.lineWidth = 2
       ctx.strokeRect(field.x, field.y - boxH, boxW, boxH)
@@ -195,9 +199,11 @@ export async function renderForm(
       ctx.fillText("Missing", field.x + 2, field.y - 8)
     } else {
       const redFeeSchedules = new Set(["DPO-CAP", "LOW-FEE", "AUTH"])
-      ctx.fillStyle = field.key === "fee_schedule" && redFeeSchedules.has(value.trim().toUpperCase())
-        ? "rgb(220,0,0)"
-        : "black"
+      ctx.fillStyle = isOrthoOverride
+        ? annotations?.orthoColor === "red" ? "rgb(220,0,0)" : "black"
+        : field.key === "fee_schedule" && redFeeSchedules.has(value.trim().toUpperCase())
+          ? "rgb(220,0,0)"
+          : "black"
       if (field.maxLines && field.maxLines > 1) {
         const horizontalPadding = 2
         const maxFontSize = field.maxFontSize ?? FONT_SIZE
@@ -250,6 +256,20 @@ export async function renderForm(
       ctx.font = `bold ${fitted.fontSize}px DejaVuSansBold`
       ctx.fillText(fitted.lines[0], COB_ALERT.x, COB_ALERT.y)
     }
+  }
+
+  if (annotations?.incentiveAlert) {
+    ctx.fillStyle = "rgb(220,0,0)"
+    ctx.font = `bold ${FONT_SIZE}px DejaVuSansBold`
+    ctx.fillText("INCENTIVE", 20, COB_ALERT.y)
+  }
+
+  if (annotations?.hygSixMonthAlert) {
+    ctx.fillStyle = "rgb(220,0,0)"
+    const alertText = "HYG 6 MONTHS + 1 DAY"
+    const fitted = fitWrappedText(ctx, alertText, 440, 1, FONT_SIZE, 12)
+    ctx.font = `bold ${fitted.fontSize}px DejaVuSansBold`
+    ctx.fillText(fitted.lines[0], 170, COB_ALERT.y)
   }
 
   // --- Night Guard circle ---

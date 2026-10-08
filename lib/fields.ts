@@ -40,6 +40,7 @@ export const FIELDS: FieldDef[] = [
   { key: "ded",                  x: 283,  y: 885,  x2: 395  },
   { key: "waiting_period",       x: 536,  y: 885,  x2: 737  },
   { key: "cob",                  x: 1030, y: 885,  x2: 1186 },
+  { key: "incentive_plan",       x: 1048, y: 824,  x2: 1178 },
 
   // Ortho (top-right area)
   { key: "ortho_max",            x: 953,  y: 936,  x2: 1044 },
@@ -140,5 +141,6 @@ export const HEADER_BOXES = {
   fmx_col_pct_ded:  { x: 20, y: 980, width: 240, height: 55 },
   pas_col_pct_ded:  { x: 267, y: 980, width: 214, height: 55 },
   oon_ins_plan_red_box: { x: 829, y: 95, width: 266, height: 56 },
+  incentive_plan_red_box: { x: 853, y: 792, width: 335, height: 55 },
   fluoride_freq: { x: 980, y: 1392, width: 220, height: 47 },
 } as const

@@ -66,6 +66,8 @@ waiting_period_source: Copy the exact CLASSIFICATIONS waiting-period results use
 
 cob: Check NOTES for "COB:" first → use that value. Otherwise PLAN LIMITATIONS → COB Rule. If COB Rule is "–" or blank → check COB Applies: No → "No", Yes → "Yes". Copy exactly: "Standard", "NON-DUP", "No", "Yes", etc.
 
+incentive_plan: Search the entire authoritative FULL breakdown, especially NOTES, PLAN INFORMATION, CLASSIFICATIONS, and coverage details, for explicit incentive-plan language. Positive indicators include "INCENTIVE PLAN", "INCENTIVE PROGRAM", "INCENTIVE LEVEL", "INCENTIVE TIER", "BENEFIT LEVEL" when describing graduated coverage, or language stating that member coinsurance/coverage changes by year based on coverage, utilization, or continuous enrollment. The exact statement "THIS IS AN INCENTIVE PROGRAM" is a positive match. If explicit incentive language is found → "YES". If the source explicitly says there is no incentive program/plan → "NO". If neither is found → "UNKNOWN". Do not infer an incentive plan solely from different percentages across classifications.
+
 ortho_max: ORTHODONTICS → LIFETIME MAXIMUM → Amount. Format: $X,XXX. If no ORTHODONTICS section → "N/A".
 
 ortho_pct: ORTHODONTICS → COVERAGE DETAILS → Coverage %. If 0, blank, N/A, or not covered per NOTES → "N/A". Format: XX%.
@@ -194,6 +196,7 @@ export interface ExtractedFields {
   waiting_period: string
   waiting_period_source: string
   cob: string
+  incentive_plan: string
   ortho_max: string
   ortho_pct: string
   sealants: string
@@ -272,6 +275,7 @@ export const FIELD_KEYS = [
   "waiting_period",
   "waiting_period_source",
   "cob",
+  "incentive_plan",
   "ortho_max",
   "ortho_pct",
   "sealants",

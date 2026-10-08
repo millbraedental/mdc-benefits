@@ -19,11 +19,14 @@ function validAnnotations(value: unknown): value is HeaderAnnotations {
   const record = value as Record<string, unknown>
   const primaryStatuses = new Set(["primary", "secondary", "none"])
   const carriers = new Set(["delta", "dpo_cap", "metlife", "guardian", "none"])
-  const flags = new Set(["oon_auth", "ok_for_hyg", "col_pct", "col_ded", "col_dpo_cap", "col_hyg", "col_full_ucr", "prev_col_pct_ded", "fmx_col_pct_ded", "pas_col_pct_ded", "px_ex_freq", "prob_d140_freq", "bwx_freq", "oon_ins_plan_red_box", "fluoride_freq"])
+  const flags = new Set(["oon_auth", "ok_for_hyg", "col_pct", "col_ded", "col_dpo_cap", "col_hyg", "col_full_ucr", "prev_col_pct_ded", "fmx_col_pct_ded", "pas_col_pct_ded", "px_ex_freq", "prob_d140_freq", "bwx_freq", "oon_ins_plan_red_box", "incentive_plan_red_box", "fluoride_freq"])
   return typeof record.primaryStatus === "string" && primaryStatuses.has(record.primaryStatus) &&
     typeof record.carrier === "string" && carriers.has(record.carrier) &&
     Array.isArray(record.flags) && record.flags.every((flag) => typeof flag === "string" && flags.has(flag)) &&
     (record.cobAlertText === undefined || (typeof record.cobAlertText === "string" && record.cobAlertText.length <= 200))
+    && (record.incentiveAlert === undefined || typeof record.incentiveAlert === "boolean")
+    && (record.orthoColor === undefined || record.orthoColor === "red" || record.orthoColor === "black")
+    && (record.hygSixMonthAlert === undefined || typeof record.hygSixMonthAlert === "boolean")
 }
 
 export async function POST(req: NextRequest) {
