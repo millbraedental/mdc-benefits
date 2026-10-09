@@ -19,6 +19,7 @@ export interface HeaderAnnotations {
   flags: HeaderFlag[]
   cobAlertText?: string
   incentiveAlert?: boolean
+  incentiveColor?: "red" | "black"
   orthoColor?: "red" | "black"
   hygSixMonthAlert?: boolean
 }
@@ -199,7 +200,9 @@ export async function renderForm(
       ctx.fillText("Missing", field.x + 2, field.y - 8)
     } else {
       const redFeeSchedules = new Set(["DPO-CAP", "LOW-FEE", "AUTH"])
-      ctx.fillStyle = isOrthoOverride
+      ctx.fillStyle = field.key === "incentive_plan" && annotations?.incentiveColor
+        ? annotations.incentiveColor === "red" ? "rgb(220,0,0)" : "black"
+        : isOrthoOverride
         ? annotations?.orthoColor === "red" ? "rgb(220,0,0)" : "black"
         : field.key === "fee_schedule" && redFeeSchedules.has(value.trim().toUpperCase())
           ? "rgb(220,0,0)"

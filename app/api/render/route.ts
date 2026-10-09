@@ -25,6 +25,7 @@ function validAnnotations(value: unknown): value is HeaderAnnotations {
     Array.isArray(record.flags) && record.flags.every((flag) => typeof flag === "string" && flags.has(flag)) &&
     (record.cobAlertText === undefined || (typeof record.cobAlertText === "string" && record.cobAlertText.length <= 200))
     && (record.incentiveAlert === undefined || typeof record.incentiveAlert === "boolean")
+    && (record.incentiveColor === undefined || record.incentiveColor === "red" || record.incentiveColor === "black")
     && (record.orthoColor === undefined || record.orthoColor === "red" || record.orthoColor === "black")
     && (record.hygSixMonthAlert === undefined || typeof record.hygSixMonthAlert === "boolean")
 }

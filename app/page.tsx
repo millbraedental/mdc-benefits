@@ -19,10 +19,10 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.38"
+const APP_VERSION = "V1.39"
 
 type CobChoice = "harvested" | "standard" | "non_dup" | "carve_out" | "mob" | "no_cob" | "unknown" | "custom"
-type IncentiveChoice = "harvested" | "custom" | "blank"
+type IncentiveChoice = "yes" | "no"
 type OrthoMissingChoice = "auth" | "missing" | "custom"
 type WaitingPeriodChoice = "harvested" | "custom" | "review"
 
@@ -87,8 +87,7 @@ export default function Home() {
   const [cobChoice, setCobChoice] = useState<CobChoice>("harvested")
   const [cobCustom, setCobCustom] = useState("")
   const [showSelectedCobAlert, setShowSelectedCobAlert] = useState(false)
-  const [incentiveChoice, setIncentiveChoice] = useState<IncentiveChoice>("harvested")
-  const [incentiveCustom, setIncentiveCustom] = useState("")
+  const [incentiveChoice, setIncentiveChoice] = useState<IncentiveChoice>("no")
   const [incentiveAlert, setIncentiveAlert] = useState(false)
   const [incentiveRedBox, setIncentiveRedBox] = useState(false)
   const [orthoMissingChoice, setOrthoMissingChoice] = useState<OrthoMissingChoice>("auth")
@@ -140,8 +139,7 @@ export default function Home() {
     setCobChoice("harvested")
     setCobCustom("")
     setShowSelectedCobAlert(false)
-    setIncentiveChoice("harvested")
-    setIncentiveCustom("")
+    setIncentiveChoice("no")
     setIncentiveAlert(false)
     setIncentiveRedBox(false)
     setOrthoMissingChoice("auth")
@@ -173,6 +171,7 @@ export default function Home() {
           })
         ))
         setExtractionReviewReasons(json.reviewReasons)
+        setIncentiveChoice(String(json.fields.incentive_plan ?? "").trim().toUpperCase() === "YES" ? "yes" : "no")
         setShowSelectedCobAlert(Boolean(predefinedCobAlert(json.fields.cob)))
         setCostUsd(json.costUsd)
         setStatus("review")
@@ -318,15 +317,7 @@ export default function Home() {
     ].join("\n"))
 
     const harvestedIncentive = String(pendingFields.incentive_plan ?? "UNKNOWN").trim()
-    const resolvedIncentive = incentiveChoice === "harvested"
-      ? harvestedIncentive
-      : incentiveChoice === "custom"
-        ? incentiveCustom.trim()
-        : ""
-    if (incentiveChoice === "custom" && !resolvedIncentive) {
-      setErrorMsg("Please enter the custom incentive-plan value.")
-      return
-    }
+    const resolvedIncentive = incentiveChoice.toUpperCase()
     resolvedFields.incentive_plan = resolvedIncentive
     notes.push([
       "Incentive Plan Confirmation",
@@ -394,6 +385,7 @@ export default function Home() {
             flags: [...headerFlags, ...(incentiveRedBox ? ["incentive_plan_red_box"] : [])],
             cobAlertText,
             incentiveAlert,
+            incentiveColor: incentiveChoice === "yes" ? "red" : "black",
             orthoColor,
             hygSixMonthAlert,
           },
@@ -588,22 +580,14 @@ export default function Home() {
               <legend className="px-1 text-sm font-semibold text-gray-900">Incentive Plan Confirmation</legend>
               <p className="mb-3 text-sm text-gray-700">Is this an Incentive Plan?</p>
               <div className="space-y-3">
-                <label className="flex items-center gap-2 text-sm text-gray-800">
-                  <input type="radio" name="incentive-choice" checked={incentiveChoice === "harvested"} onChange={() => setIncentiveChoice("harvested")} />
-                  Harvested: <span className="font-semibold">{String(pendingFields?.incentive_plan ?? "UNKNOWN")}</span>
+                <p className="text-xs text-gray-500">Harvested: <span className="font-semibold">{String(pendingFields?.incentive_plan ?? "UNKNOWN")}</span></p>
+                <label className="flex items-center gap-2 text-sm font-semibold text-red-700">
+                  <input type="radio" name="incentive-choice" checked={incentiveChoice === "yes"} onChange={() => setIncentiveChoice("yes")} />
+                  YES
                 </label>
-                <div>
-                  <label className="flex items-center gap-2 text-sm text-gray-800">
-                    <input type="radio" name="incentive-choice" checked={incentiveChoice === "custom"} onChange={() => setIncentiveChoice("custom")} />
-                    CUSTOM
-                  </label>
-                  {incentiveChoice === "custom" && (
-                    <input type="text" value={incentiveCustom} onChange={(event) => setIncentiveCustom(event.target.value)} placeholder="Enter YES, NO, or another value" className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900" />
-                  )}
-                </div>
-                <label className="flex items-center gap-2 text-sm text-gray-800">
-                  <input type="radio" name="incentive-choice" checked={incentiveChoice === "blank"} onChange={() => setIncentiveChoice("blank")} />
-                  Leave field blank
+                <label className="flex items-center gap-2 text-sm font-semibold text-black">
+                  <input type="radio" name="incentive-choice" checked={incentiveChoice === "no"} onChange={() => setIncentiveChoice("no")} />
+                  NO
                 </label>
                 <label className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
                   <input type="checkbox" checked={incentiveRedBox} onChange={(event) => setIncentiveRedBox(event.target.checked)} />
@@ -948,8 +932,7 @@ export default function Home() {
                 setCobChoice("harvested")
                 setCobCustom("")
                 setShowSelectedCobAlert(false)
-                setIncentiveChoice("harvested")
-                setIncentiveCustom("")
+                setIncentiveChoice("no")
                 setIncentiveAlert(false)
                 setIncentiveRedBox(false)
                 setOrthoMissingChoice("auth")
