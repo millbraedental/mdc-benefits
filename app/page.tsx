@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useEffect, useState, useRef } from "react"
+import { FIELDS } from "@/lib/fields"
 
 type Status = "idle" | "extracting" | "review" | "rendering" | "done" | "error"
 type ReviewConflict = {
@@ -19,13 +20,13 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.40"
+const APP_VERSION = "V1.41"
 
 type CobChoice = "harvested" | "standard" | "non_dup" | "carve_out" | "mob" | "no_cob" | "unknown" | "custom"
 type IncentiveChoice = "yes" | "no"
 type OrthoMissingChoice = "auth" | "missing" | "custom"
 type WaitingPeriodChoice = "harvested" | "custom" | "review"
-type CrownDowngradeChoice = "unknown" | "missing" | "custom"
+type MissingFieldChoice = "harvested" | "custom" | "unknown"
 
 function predefinedCobAlert(value: unknown) {
   const normalized = String(value ?? "").trim().toUpperCase()
@@ -43,10 +44,34 @@ function orthoDataIsMissing(fields: Record<string, unknown> | null) {
   return missing(fields.ortho_max) || missing(fields.ortho_pct)
 }
 
-function crownDowngradeIsUnclear(fields: Record<string, unknown> | null) {
-  if (!fields) return false
-  const value = String(fields.crown_downgrade ?? "").trim().toUpperCase()
-  return !value || ["UNKNOWN", "MISSING", "REVIEW", "PLEASE REVIEW"].includes(value)
+const DEDICATED_REVIEW_FIELDS = new Set([
+  "group_number", "cob", "incentive_plan", "waiting_period", "ortho_max", "ortho_pct",
+])
+
+function needsMissingReview(value: unknown) {
+  const normalized = String(value ?? "").trim().toUpperCase()
+  return !normalized || ["UNKNOWN", "MISSING", "REVIEW", "PLEASE REVIEW"].includes(normalized)
+}
+
+function missingReviewFields(fields: Record<string, unknown> | null) {
+  if (!fields) return []
+  return FIELDS.filter((field, index) =>
+    FIELDS.findIndex((candidate) => candidate.key === field.key) === index &&
+    !DEDICATED_REVIEW_FIELDS.has(field.key) &&
+    needsMissingReview(fields[field.key])
+  )
+}
+
+function fieldLabel(key: string) {
+  const labels: Record<string, string> = {
+    crown_downgrade: "Crown Downgrade",
+    assignment_of_benefits: "Assignment Pay Office",
+    prev_apply_max: "PREV Apply Max",
+    freq_exam_prophy: "Prof/Ex Frequency",
+    freq_prob_d140: "Problem D0140 Frequency",
+    freq_bwx: "BWX Frequency",
+  }
+  return labels[key] ?? key.replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
 const HEADER_FLAGS = [
@@ -103,10 +128,109 @@ export default function Home() {
   const [hygSixMonthAlert, setHygSixMonthAlert] = useState(false)
   const [waitingPeriodChoice, setWaitingPeriodChoice] = useState<WaitingPeriodChoice>("harvested")
   const [waitingPeriodCustom, setWaitingPeriodCustom] = useState("")
-  const [crownDowngradeChoice, setCrownDowngradeChoice] = useState<CrownDowngradeChoice>("unknown")
-  const [crownDowngradeCustom, setCrownDowngradeCustom] = useState("")
+  const [missingFieldChoices, setMissingFieldChoices] = useState<Record<string, MissingFieldChoice>>({})
+  const [missingFieldCustom, setMissingFieldCustom] = useState<Record<string, string>>({})
+  const [redFields, setRedFields] = useState<string[]>([])
   const fullInputRef = useRef<HTMLInputElement>(null)
   const basicInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (status !== "review" || !pendingFields) return
+
+    const controller = new AbortController()
+    const timer = window.setTimeout(async () => {
+      const draftFields = { ...pendingFields }
+
+      for (const field of missingReviewFields(pendingFields)) {
+        const choice = missingFieldChoices[field.key] ?? "harvested"
+        if (choice === "unknown") draftFields[field.key] = "UNKNOWN"
+        if (choice === "custom" && missingFieldCustom[field.key]?.trim()) {
+          draftFields[field.key] = missingFieldCustom[field.key].trim()
+        }
+      }
+
+      conflicts.forEach((conflict, index) => {
+        if (["cob", "waiting_period"].includes(conflict.field_key) || needsMissingReview(pendingFields[conflict.field_key])) return
+        const choice = choices[index]
+        const selected = choice === "__custom__" ? customValues[index]?.trim() : choice
+        if (selected) draftFields[conflict.field_key] = selected
+      })
+
+      const harvestedGroup = String(pendingFields.group_number ?? "")
+      if (groupNumberChoice === "append" && groupNumberAppend.trim()) draftFields.group_number = `${harvestedGroup}${groupNumberAppend.trim()}`
+      if (groupNumberChoice === "custom" && groupNumberCustom.trim()) draftFields.group_number = groupNumberCustom.trim()
+
+      const cobValues: Record<Exclude<CobChoice, "harvested" | "custom">, string> = {
+        standard: "Standard", non_dup: "NON-DUP", carve_out: "CARVE OUT", mob: "MOB",
+        no_cob: "NO COB", unknown: "UNKNOWN",
+      }
+      const draftCob = cobChoice === "harvested"
+        ? String(pendingFields.cob ?? "")
+        : cobChoice === "custom"
+          ? cobCustom.trim() || String(pendingFields.cob ?? "")
+          : cobValues[cobChoice]
+      draftFields.cob = draftCob
+      draftFields.incentive_plan = incentiveChoice.toUpperCase()
+
+      if (waitingPeriodChoice === "review") draftFields.waiting_period = "REVIEW"
+      if (waitingPeriodChoice === "custom" && waitingPeriodCustom.trim()) draftFields.waiting_period = waitingPeriodCustom.trim()
+
+      let orthoColor: "red" | "black" | undefined
+      if (orthoDataIsMissing(pendingFields)) {
+        const draftOrtho = orthoMissingChoice === "auth" ? "AUTH" : orthoMissingChoice === "missing" ? "MISSING" : orthoCustom.trim()
+        if (draftOrtho) {
+          draftFields.ortho_max = draftOrtho
+          draftFields.ortho_pct = ""
+        }
+        orthoColor = orthoMissingChoice === "custom" ? orthoCustomColor : "red"
+      }
+
+      const cobAlertText = cobChoice === "harvested" || cobChoice === "custom"
+        ? showSelectedCobAlert ? predefinedCobAlert(draftCob) || draftCob : ""
+        : predefinedCobAlert(draftCob)
+
+      try {
+        const res = await fetch("/api/render", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+          body: JSON.stringify({
+            passcode,
+            fields: draftFields,
+            annotations: {
+              primaryStatus: primaryStatus || "none",
+              carrier: carrier || "none",
+              flags: [...headerFlags, ...(incentiveRedBox ? ["incentive_plan_red_box"] : [])],
+              cobAlertText,
+              incentiveAlert,
+              incentiveColor: incentiveChoice === "yes" ? "red" : "black",
+              orthoColor,
+              hygSixMonthAlert,
+              redFields,
+            },
+          }),
+        })
+        if (!res.ok) return
+        const nextUrl = URL.createObjectURL(await res.blob())
+        setPreviewUrl((current) => {
+          if (current) URL.revokeObjectURL(current)
+          return nextUrl
+        })
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          // Keep the last usable preview if a draft refresh fails.
+        }
+      }
+    }, 250)
+
+    return () => {
+      window.clearTimeout(timer)
+      controller.abort()
+    }
+  }, [status, pendingFields, passcode, conflicts, choices, customValues, primaryStatus, carrier, headerFlags,
+    groupNumberChoice, groupNumberAppend, groupNumberCustom, cobChoice, cobCustom, showSelectedCobAlert,
+    incentiveChoice, incentiveAlert, incentiveRedBox, orthoMissingChoice, orthoCustom, orthoCustomColor,
+    hygSixMonthAlert, waitingPeriodChoice, waitingPeriodCustom, missingFieldChoices, missingFieldCustom, redFields])
 
   function selectFile(file: File, role: "full" | "basic") {
     if (file.type !== "application/pdf") {
@@ -157,8 +281,9 @@ export default function Home() {
     setHygSixMonthAlert(false)
     setWaitingPeriodChoice("harvested")
     setWaitingPeriodCustom("")
-    setCrownDowngradeChoice("unknown")
-    setCrownDowngradeCustom("")
+    setMissingFieldChoices({})
+    setMissingFieldCustom({})
+    setRedFields([])
 
     const formData = new FormData()
     formData.append("passcode", passcode)
@@ -183,11 +308,10 @@ export default function Home() {
         ))
         setExtractionReviewReasons(json.reviewReasons)
         setIncentiveChoice(String(json.fields.incentive_plan ?? "").trim().toUpperCase() === "YES" ? "yes" : "no")
-        setCrownDowngradeChoice(String(json.fields.crown_downgrade ?? "").trim().toUpperCase() === "MISSING" ? "missing" : "unknown")
+        setMissingFieldChoices(Object.fromEntries(missingReviewFields(json.fields).map((field) => [field.key, "harvested"])))
         setShowSelectedCobAlert(Boolean(predefinedCobAlert(json.fields.cob)))
         setCostUsd(json.costUsd)
         setStatus("review")
-        await loadPreliminaryPreview(json.fields)
         return
       }
 
@@ -220,25 +344,6 @@ export default function Home() {
     setStatus("done")
   }
 
-  async function loadPreliminaryPreview(fields: Record<string, unknown>) {
-    try {
-      const res = await fetch("/api/render", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          passcode,
-          fields,
-          annotations: { primaryStatus: "none", carrier: "none", flags: [] },
-        }),
-      })
-      if (!res.ok) return
-      const blob = await res.blob()
-      setPreviewUrl(URL.createObjectURL(blob))
-    } catch {
-      // The questions remain usable if the local-only preliminary render fails.
-    }
-  }
-
   async function handleResolvedRender() {
     if (!pendingFields) return
 
@@ -253,9 +358,32 @@ export default function Home() {
 
     const resolvedFields = { ...pendingFields }
     const notes: string[] = [...extractionReviewReasons]
+    const missingFields = missingReviewFields(pendingFields)
+    const missingFieldKeys = new Set(missingFields.map((field) => field.key))
+
+    for (const field of missingFields) {
+      const choice = missingFieldChoices[field.key] ?? "harvested"
+      const harvested = String(pendingFields[field.key] ?? "")
+      const resolvedValue = choice === "harvested"
+        ? harvested
+        : choice === "unknown"
+          ? "UNKNOWN"
+          : (missingFieldCustom[field.key] ?? "").trim()
+      if (choice === "custom" && !resolvedValue) {
+        setErrorMsg(`Please enter the custom value for ${fieldLabel(field.key)}.`)
+        return
+      }
+      resolvedFields[field.key] = resolvedValue
+      notes.push([
+        `${fieldLabel(field.key)} Missing-Value Confirmation`,
+        `Harvested value: ${harvested || "(blank)"}`,
+        `Value printed: ${resolvedValue || "(blank)"}`,
+        `Color: ${redFields.includes(field.key) ? "red" : "black"}`,
+      ].join("\n"))
+    }
 
     for (const [index, conflict] of conflicts.entries()) {
-      if (conflict.field_key === "cob" || conflict.field_key === "waiting_period" || conflict.field_key === "crown_downgrade") continue
+      if (conflict.field_key === "cob" || conflict.field_key === "waiting_period" || missingFieldKeys.has(conflict.field_key)) continue
       const choice = choices[index]
       const selectedValue = choice === "__custom__" ? customValues[index]?.trim() : choice
       if (!selectedValue) {
@@ -339,25 +467,6 @@ export default function Home() {
       `Red box around Incentive Plan field: ${incentiveRedBox ? "Yes" : "No"}`,
     ].join("\n"))
 
-    if (crownDowngradeIsUnclear(pendingFields)) {
-      const resolvedCrownDowngrade = crownDowngradeChoice === "unknown"
-        ? "UNKNOWN"
-        : crownDowngradeChoice === "missing"
-          ? "MISSING"
-          : crownDowngradeCustom.trim()
-      if (crownDowngradeChoice === "custom" && !resolvedCrownDowngrade) {
-        setErrorMsg("Please enter the custom Crown Downgrade value.")
-        return
-      }
-      resolvedFields.crown_downgrade = resolvedCrownDowngrade
-      notes.push([
-        "Crown Downgrade Confirmation",
-        `Harvested value: ${String(pendingFields.crown_downgrade ?? "")}`,
-        `Value printed: ${resolvedCrownDowngrade}`,
-        "Color: black",
-      ].join("\n"))
-    }
-
     const harvestedWaitingPeriod = String(pendingFields.waiting_period ?? "").trim()
     const resolvedWaitingPeriod = waitingPeriodChoice === "harvested"
       ? harvestedWaitingPeriod
@@ -419,6 +528,7 @@ export default function Home() {
             incentiveColor: incentiveChoice === "yes" ? "red" : "black",
             orthoColor,
             hygSixMonthAlert,
+            redFields,
           },
         }),
       })
@@ -607,32 +717,40 @@ export default function Home() {
               </div>
             </fieldset>
 
-            {crownDowngradeIsUnclear(pendingFields) && (
-              <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
-                <legend className="px-1 text-sm font-semibold text-gray-900">Crown Downgrade Confirmation</legend>
-                <p className="mb-2 text-sm text-gray-700">Stratus did not clearly define the crown downgrade. Choose what to print.</p>
-                <p className="mb-3 text-xs text-gray-500">Harvested: {String(pendingFields?.crown_downgrade ?? "")}</p>
-                <div className="space-y-3 text-black">
-                  <label className="flex items-center gap-2 text-sm font-semibold">
-                    <input type="radio" name="crown-downgrade-choice" checked={crownDowngradeChoice === "unknown"} onChange={() => setCrownDowngradeChoice("unknown")} />
-                    UNKNOWN
-                  </label>
-                  <label className="flex items-center gap-2 text-sm font-semibold">
-                    <input type="radio" name="crown-downgrade-choice" checked={crownDowngradeChoice === "missing"} onChange={() => setCrownDowngradeChoice("missing")} />
-                    MISSING
-                  </label>
-                  <div>
+            {missingReviewFields(pendingFields).map((field) => {
+              const choice = missingFieldChoices[field.key] ?? "harvested"
+              const harvested = String(pendingFields?.[field.key] ?? "")
+              return (
+                <fieldset key={field.key} className="rounded-lg border border-amber-200 bg-white p-4">
+                  <legend className="px-1 text-sm font-semibold text-gray-900">{fieldLabel(field.key)} Confirmation</legend>
+                  <p className="mb-2 text-sm text-gray-700">This value was blank or unclear. Choose what to print.</p>
+                  <p className="mb-3 text-xs text-gray-500">Harvested: {harvested || "(blank)"}</p>
+                  <div className="space-y-3 text-black">
                     <label className="flex items-center gap-2 text-sm font-semibold">
-                      <input type="radio" name="crown-downgrade-choice" checked={crownDowngradeChoice === "custom"} onChange={() => setCrownDowngradeChoice("custom")} />
-                      CUSTOM
+                      <input type="radio" name={`missing-${field.key}`} checked={choice === "harvested"} onChange={() => setMissingFieldChoices((current) => ({ ...current, [field.key]: "harvested" }))} />
+                      HARVESTED{harvested ? `: ${harvested}` : " (blank)"}
                     </label>
-                    {crownDowngradeChoice === "custom" && (
-                      <input type="text" value={crownDowngradeCustom} onChange={(event) => setCrownDowngradeCustom(event.target.value)} placeholder="Enter the Crown Downgrade value" className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900" />
-                    )}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-semibold">
+                        <input type="radio" name={`missing-${field.key}`} checked={choice === "custom"} onChange={() => setMissingFieldChoices((current) => ({ ...current, [field.key]: "custom" }))} />
+                        CUSTOM
+                      </label>
+                      {choice === "custom" && (
+                        <input type="text" value={missingFieldCustom[field.key] ?? ""} onChange={(event) => setMissingFieldCustom((current) => ({ ...current, [field.key]: event.target.value }))} placeholder={`Enter ${fieldLabel(field.key)}`} className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900" />
+                      )}
+                    </div>
+                    <label className="flex items-center gap-2 text-sm font-semibold">
+                      <input type="radio" name={`missing-${field.key}`} checked={choice === "unknown"} onChange={() => setMissingFieldChoices((current) => ({ ...current, [field.key]: "unknown" }))} />
+                      UNKNOWN
+                    </label>
+                    <label className="flex items-center gap-2 text-sm font-semibold text-red-700">
+                      <input type="checkbox" checked={redFields.includes(field.key)} onChange={(event) => setRedFields((current) => event.target.checked ? [...current, field.key] : current.filter((key) => key !== field.key))} />
+                      Print this field in red
+                    </label>
                   </div>
-                </div>
-              </fieldset>
-            )}
+                </fieldset>
+              )
+            })}
 
             <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
               <legend className="px-1 text-sm font-semibold text-gray-900">Incentive Plan Confirmation</legend>
@@ -698,7 +816,7 @@ export default function Home() {
               </label>
             </fieldset>
 
-            {conflicts.map((conflict, index) => conflict.field_key === "cob" || conflict.field_key === "waiting_period" ? null : (
+            {conflicts.map((conflict, index) => conflict.field_key === "cob" || conflict.field_key === "waiting_period" || missingReviewFields(pendingFields).some((field) => field.key === conflict.field_key) ? null : (
               <fieldset key={`${conflict.field_key}-${index}`} className="rounded-lg border border-amber-200 bg-white p-4">
                 <legend className="px-1 text-sm font-semibold text-gray-900">{conflict.label}</legend>
                 <p className="mb-3 text-sm text-gray-700">{conflict.question}</p>
@@ -999,8 +1117,9 @@ export default function Home() {
                 setHygSixMonthAlert(false)
                 setWaitingPeriodChoice("harvested")
                 setWaitingPeriodCustom("")
-                setCrownDowngradeChoice("unknown")
-                setCrownDowngradeCustom("")
+                setMissingFieldChoices({})
+                setMissingFieldCustom({})
+                setRedFields([])
                 if (fullInputRef.current) fullInputRef.current.value = ""
                 if (basicInputRef.current) basicInputRef.current.value = ""
               }}

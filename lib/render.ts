@@ -22,6 +22,7 @@ export interface HeaderAnnotations {
   incentiveColor?: "red" | "black"
   orthoColor?: "red" | "black"
   hygSixMonthAlert?: boolean
+  redFields?: string[]
 }
 
 function strokeRoundedBox(
@@ -159,6 +160,7 @@ export async function renderForm(
     const value: string = (fields as unknown as Record<string, string>)[field.key] ?? "MISSING"
     const boxW = field.x2 - field.x
     const boxH = field.boxHeight ?? BOX_HEIGHT
+    const forceRed = annotations?.redFields?.includes(field.key) ?? false
 
     if (field.topDown) {
       // REV22 Sealants: transparent top-down multiline, ending above Y=1020.
@@ -182,7 +184,7 @@ export async function renderForm(
         lines = lines.slice(0, Math.max(1, maxLines))
       }
 
-      ctx.fillStyle = "black"
+      ctx.fillStyle = forceRed ? "rgb(220,0,0)" : "black"
       ctx.font = `${fontSize}px DejaVuSans`
       lines.forEach((line, i) => {
         ctx.fillText(line, field.x, field.y + fontSize + i * lineSpacing)
@@ -191,24 +193,17 @@ export async function renderForm(
     }
 
     const isOrthoOverride = (field.key === "ortho_max" || field.key === "ortho_pct") && annotations?.orthoColor
-    const missingPrintsAsBlack = field.key === "crown_downgrade"
-    if (value === "MISSING" && !isOrthoOverride && !missingPrintsAsBlack) {
-      ctx.strokeStyle = "rgb(220,0,0)"
-      ctx.lineWidth = 2
-      ctx.strokeRect(field.x, field.y - boxH, boxW, boxH)
-      ctx.fillStyle = "rgb(220,0,0)"
-      ctx.font = `${FONT_SIZE}px DejaVuSans`
-      ctx.fillText("Missing", field.x + 2, field.y - 8)
-    } else {
-      const redFeeSchedules = new Set(["DPO-CAP", "LOW-FEE", "AUTH"])
-      ctx.fillStyle = field.key === "incentive_plan" && annotations?.incentiveColor
+    const redFeeSchedules = new Set(["DPO-CAP", "LOW-FEE", "AUTH"])
+    ctx.fillStyle = forceRed
+      ? "rgb(220,0,0)"
+      : field.key === "incentive_plan" && annotations?.incentiveColor
         ? annotations.incentiveColor === "red" ? "rgb(220,0,0)" : "black"
         : isOrthoOverride
         ? annotations?.orthoColor === "red" ? "rgb(220,0,0)" : "black"
         : field.key === "fee_schedule" && redFeeSchedules.has(value.trim().toUpperCase())
           ? "rgb(220,0,0)"
           : "black"
-      if (field.maxLines && field.maxLines > 1) {
+    if (field.maxLines && field.maxLines > 1) {
         const horizontalPadding = 2
         const maxFontSize = field.maxFontSize ?? FONT_SIZE
         const fitted = fitWrappedText(
@@ -226,10 +221,9 @@ export async function renderForm(
         fitted.lines.forEach((line, index) => {
           ctx.fillText(line, field.x + horizontalPadding, firstBaseline + index * lineHeight)
         })
-      } else {
-        ctx.font = `${FONT_SIZE}px DejaVuSans`
-        ctx.fillText(value, field.x, field.y - 2)
-      }
+    } else {
+      ctx.font = `${FONT_SIZE}px DejaVuSans`
+      ctx.fillText(value, field.x, field.y - 2)
     }
   }
 

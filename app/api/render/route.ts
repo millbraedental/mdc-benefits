@@ -28,6 +28,7 @@ function validAnnotations(value: unknown): value is HeaderAnnotations {
     && (record.incentiveColor === undefined || record.incentiveColor === "red" || record.incentiveColor === "black")
     && (record.orthoColor === undefined || record.orthoColor === "red" || record.orthoColor === "black")
     && (record.hygSixMonthAlert === undefined || typeof record.hygSixMonthAlert === "boolean")
+    && (record.redFields === undefined || (Array.isArray(record.redFields) && record.redFields.every((field) => typeof field === "string" && FIELD_KEYS.includes(field as typeof FIELD_KEYS[number]))))
 }
 
 export async function POST(req: NextRequest) {
