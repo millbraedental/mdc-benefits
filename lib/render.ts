@@ -191,7 +191,8 @@ export async function renderForm(
     }
 
     const isOrthoOverride = (field.key === "ortho_max" || field.key === "ortho_pct") && annotations?.orthoColor
-    if (value === "MISSING" && !isOrthoOverride) {
+    const missingPrintsAsBlack = field.key === "crown_downgrade"
+    if (value === "MISSING" && !isOrthoOverride && !missingPrintsAsBlack) {
       ctx.strokeStyle = "rgb(220,0,0)"
       ctx.lineWidth = 2
       ctx.strokeRect(field.x, field.y - boxH, boxW, boxH)

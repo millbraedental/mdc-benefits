@@ -19,12 +19,13 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.39"
+const APP_VERSION = "V1.40"
 
 type CobChoice = "harvested" | "standard" | "non_dup" | "carve_out" | "mob" | "no_cob" | "unknown" | "custom"
 type IncentiveChoice = "yes" | "no"
 type OrthoMissingChoice = "auth" | "missing" | "custom"
 type WaitingPeriodChoice = "harvested" | "custom" | "review"
+type CrownDowngradeChoice = "unknown" | "missing" | "custom"
 
 function predefinedCobAlert(value: unknown) {
   const normalized = String(value ?? "").trim().toUpperCase()
@@ -40,6 +41,12 @@ function orthoDataIsMissing(fields: Record<string, unknown> | null) {
   if (!fields) return false
   const missing = (value: unknown) => !String(value ?? "").trim() || String(value).trim().toUpperCase() === "MISSING"
   return missing(fields.ortho_max) || missing(fields.ortho_pct)
+}
+
+function crownDowngradeIsUnclear(fields: Record<string, unknown> | null) {
+  if (!fields) return false
+  const value = String(fields.crown_downgrade ?? "").trim().toUpperCase()
+  return !value || ["UNKNOWN", "MISSING", "REVIEW", "PLEASE REVIEW"].includes(value)
 }
 
 const HEADER_FLAGS = [
@@ -96,6 +103,8 @@ export default function Home() {
   const [hygSixMonthAlert, setHygSixMonthAlert] = useState(false)
   const [waitingPeriodChoice, setWaitingPeriodChoice] = useState<WaitingPeriodChoice>("harvested")
   const [waitingPeriodCustom, setWaitingPeriodCustom] = useState("")
+  const [crownDowngradeChoice, setCrownDowngradeChoice] = useState<CrownDowngradeChoice>("unknown")
+  const [crownDowngradeCustom, setCrownDowngradeCustom] = useState("")
   const fullInputRef = useRef<HTMLInputElement>(null)
   const basicInputRef = useRef<HTMLInputElement>(null)
 
@@ -148,6 +157,8 @@ export default function Home() {
     setHygSixMonthAlert(false)
     setWaitingPeriodChoice("harvested")
     setWaitingPeriodCustom("")
+    setCrownDowngradeChoice("unknown")
+    setCrownDowngradeCustom("")
 
     const formData = new FormData()
     formData.append("passcode", passcode)
@@ -172,6 +183,7 @@ export default function Home() {
         ))
         setExtractionReviewReasons(json.reviewReasons)
         setIncentiveChoice(String(json.fields.incentive_plan ?? "").trim().toUpperCase() === "YES" ? "yes" : "no")
+        setCrownDowngradeChoice(String(json.fields.crown_downgrade ?? "").trim().toUpperCase() === "MISSING" ? "missing" : "unknown")
         setShowSelectedCobAlert(Boolean(predefinedCobAlert(json.fields.cob)))
         setCostUsd(json.costUsd)
         setStatus("review")
@@ -243,7 +255,7 @@ export default function Home() {
     const notes: string[] = [...extractionReviewReasons]
 
     for (const [index, conflict] of conflicts.entries()) {
-      if (conflict.field_key === "cob" || conflict.field_key === "waiting_period") continue
+      if (conflict.field_key === "cob" || conflict.field_key === "waiting_period" || conflict.field_key === "crown_downgrade") continue
       const choice = choices[index]
       const selectedValue = choice === "__custom__" ? customValues[index]?.trim() : choice
       if (!selectedValue) {
@@ -326,6 +338,25 @@ export default function Home() {
       `Red INCENTIVE label: ${incentiveAlert ? "Yes" : "No"}`,
       `Red box around Incentive Plan field: ${incentiveRedBox ? "Yes" : "No"}`,
     ].join("\n"))
+
+    if (crownDowngradeIsUnclear(pendingFields)) {
+      const resolvedCrownDowngrade = crownDowngradeChoice === "unknown"
+        ? "UNKNOWN"
+        : crownDowngradeChoice === "missing"
+          ? "MISSING"
+          : crownDowngradeCustom.trim()
+      if (crownDowngradeChoice === "custom" && !resolvedCrownDowngrade) {
+        setErrorMsg("Please enter the custom Crown Downgrade value.")
+        return
+      }
+      resolvedFields.crown_downgrade = resolvedCrownDowngrade
+      notes.push([
+        "Crown Downgrade Confirmation",
+        `Harvested value: ${String(pendingFields.crown_downgrade ?? "")}`,
+        `Value printed: ${resolvedCrownDowngrade}`,
+        "Color: black",
+      ].join("\n"))
+    }
 
     const harvestedWaitingPeriod = String(pendingFields.waiting_period ?? "").trim()
     const resolvedWaitingPeriod = waitingPeriodChoice === "harvested"
@@ -575,6 +606,33 @@ export default function Home() {
                 ))}
               </div>
             </fieldset>
+
+            {crownDowngradeIsUnclear(pendingFields) && (
+              <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
+                <legend className="px-1 text-sm font-semibold text-gray-900">Crown Downgrade Confirmation</legend>
+                <p className="mb-2 text-sm text-gray-700">Stratus did not clearly define the crown downgrade. Choose what to print.</p>
+                <p className="mb-3 text-xs text-gray-500">Harvested: {String(pendingFields?.crown_downgrade ?? "")}</p>
+                <div className="space-y-3 text-black">
+                  <label className="flex items-center gap-2 text-sm font-semibold">
+                    <input type="radio" name="crown-downgrade-choice" checked={crownDowngradeChoice === "unknown"} onChange={() => setCrownDowngradeChoice("unknown")} />
+                    UNKNOWN
+                  </label>
+                  <label className="flex items-center gap-2 text-sm font-semibold">
+                    <input type="radio" name="crown-downgrade-choice" checked={crownDowngradeChoice === "missing"} onChange={() => setCrownDowngradeChoice("missing")} />
+                    MISSING
+                  </label>
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-semibold">
+                      <input type="radio" name="crown-downgrade-choice" checked={crownDowngradeChoice === "custom"} onChange={() => setCrownDowngradeChoice("custom")} />
+                      CUSTOM
+                    </label>
+                    {crownDowngradeChoice === "custom" && (
+                      <input type="text" value={crownDowngradeCustom} onChange={(event) => setCrownDowngradeCustom(event.target.value)} placeholder="Enter the Crown Downgrade value" className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900" />
+                    )}
+                  </div>
+                </div>
+              </fieldset>
+            )}
 
             <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
               <legend className="px-1 text-sm font-semibold text-gray-900">Incentive Plan Confirmation</legend>
@@ -941,6 +999,8 @@ export default function Home() {
                 setHygSixMonthAlert(false)
                 setWaitingPeriodChoice("harvested")
                 setWaitingPeriodCustom("")
+                setCrownDowngradeChoice("unknown")
+                setCrownDowngradeCustom("")
                 if (fullInputRef.current) fullInputRef.current.value = ""
                 if (basicInputRef.current) basicInputRef.current.value = ""
               }}
