@@ -25,6 +25,7 @@ export interface HeaderAnnotations {
   redFields?: string[]
   topNoticeText?: string
   topNoticeColor?: "red" | "black"
+  bwxFreqAlert?: boolean
 }
 
 function strokeRoundedBox(
@@ -276,7 +277,16 @@ export async function renderForm(
   }
 
   if (annotations?.topNoticeText?.trim()) {
-    drawTopNotice(ctx, annotations.topNoticeText, { x: 20, baselineY: 38, width: 1160 }, annotations.topNoticeColor)
+    drawTopNotice(
+      ctx,
+      annotations.topNoticeText,
+      { x: 20, baselineY: 38, width: annotations.bwxFreqAlert ? 800 : 1160 },
+      annotations.topNoticeColor
+    )
+  }
+
+  if (annotations?.bwxFreqAlert) {
+    drawTopNotice(ctx, "BWX FREQ", { x: 840, baselineY: 38, width: 340 })
   }
 
   if (annotations?.incentiveAlert) {

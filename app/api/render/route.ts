@@ -31,6 +31,7 @@ function validAnnotations(value: unknown): value is HeaderAnnotations {
     && (record.redFields === undefined || (Array.isArray(record.redFields) && record.redFields.every((field) => typeof field === "string" && FIELD_KEYS.includes(field as typeof FIELD_KEYS[number]))))
     && (record.topNoticeText === undefined || (typeof record.topNoticeText === "string" && record.topNoticeText.length <= 200))
     && (record.topNoticeColor === undefined || record.topNoticeColor === "red" || record.topNoticeColor === "black")
+    && (record.bwxFreqAlert === undefined || typeof record.bwxFreqAlert === "boolean")
 }
 
 export async function POST(req: NextRequest) {

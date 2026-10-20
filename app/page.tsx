@@ -20,7 +20,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.43"
+const APP_VERSION = "V1.44"
 
 type CobChoice = "harvested" | "standard" | "non_dup" | "carve_out" | "mob" | "no_cob" | "unknown" | "custom"
 type IncentiveChoice = "yes" | "no"
@@ -135,6 +135,7 @@ export default function Home() {
   const [copayAlertColor, setCopayAlertColor] = useState<"red" | "black">("red")
   const [copayAlertChoice, setCopayAlertChoice] = useState<"standard" | "custom">("standard")
   const [copayAlertCustom, setCopayAlertCustom] = useState("")
+  const [bwxFreqAlert, setBwxFreqAlert] = useState(false)
   const fullInputRef = useRef<HTMLInputElement>(null)
   const basicInputRef = useRef<HTMLInputElement>(null)
 
@@ -215,6 +216,7 @@ export default function Home() {
                 ? (copayAlertChoice === "custom" ? copayAlertCustom.trim() || "COL COPAY ON HYG DPO-CAP" : "COL COPAY ON HYG DPO-CAP")
                 : "",
               topNoticeColor: copayAlertColor,
+              bwxFreqAlert: headerFlags.includes("bwx_freq") && bwxFreqAlert,
             },
           }),
         })
@@ -239,7 +241,7 @@ export default function Home() {
     groupNumberChoice, groupNumberAppend, groupNumberCustom, cobChoice, cobCustom, showSelectedCobAlert,
     incentiveChoice, incentiveAlert, incentiveRedBox, orthoMissingChoice, orthoCustom, orthoCustomColor,
     hygSixMonthAlert, waitingPeriodChoice, waitingPeriodCustom, missingFieldChoices, missingFieldCustom, redFields,
-    copayAlertEnabled, copayAlertColor, copayAlertChoice, copayAlertCustom])
+    copayAlertEnabled, copayAlertColor, copayAlertChoice, copayAlertCustom, bwxFreqAlert])
 
   function selectFile(file: File, role: "full" | "basic") {
     if (file.type !== "application/pdf") {
@@ -297,6 +299,7 @@ export default function Home() {
     setCopayAlertColor("red")
     setCopayAlertChoice("standard")
     setCopayAlertCustom("")
+    setBwxFreqAlert(false)
 
     const formData = new FormData()
     formData.append("passcode", passcode)
@@ -537,6 +540,9 @@ export default function Home() {
         `Color: ${copayAlertColor}`,
       ].join("\n"))
     }
+    if (headerFlags.includes("bwx_freq") && bwxFreqAlert) {
+      notes.push("BWX FREQ top warning: red")
+    }
 
     setStatus("rendering")
     setErrorMsg("")
@@ -561,6 +567,7 @@ export default function Home() {
             redFields,
             topNoticeText,
             topNoticeColor: copayAlertColor,
+            bwxFreqAlert: headerFlags.includes("bwx_freq") && bwxFreqAlert,
           },
         }),
       })
@@ -837,6 +844,12 @@ export default function Home() {
                     {label}
                   </label>
                 ))}
+                {headerFlags.includes("bwx_freq") && (
+                  <label className="ml-6 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                    <input type="checkbox" checked={bwxFreqAlert} onChange={(event) => setBwxFreqAlert(event.target.checked)} />
+                    Add red “BWX FREQ” text at top
+                  </label>
+                )}
                 <div className="border-t border-gray-200 pt-3">
                   <label className="flex items-center gap-2 text-sm font-semibold text-gray-800">
                     <input type="checkbox" checked={copayAlertEnabled} onChange={(event) => setCopayAlertEnabled(event.target.checked)} />
@@ -1189,6 +1202,7 @@ export default function Home() {
                 setCopayAlertColor("red")
                 setCopayAlertChoice("standard")
                 setCopayAlertCustom("")
+                setBwxFreqAlert(false)
                 if (fullInputRef.current) fullInputRef.current.value = ""
                 if (basicInputRef.current) basicInputRef.current.value = ""
               }}
