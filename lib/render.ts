@@ -23,6 +23,8 @@ export interface HeaderAnnotations {
   orthoColor?: "red" | "black"
   hygSixMonthAlert?: boolean
   redFields?: string[]
+  topNoticeText?: string
+  topNoticeColor?: "red" | "black"
 }
 
 function strokeRoundedBox(
@@ -254,6 +256,14 @@ export async function renderForm(
       ctx.font = `bold ${fitted.fontSize}px DejaVuSansBold`
       ctx.fillText(fitted.lines[0], COB_ALERT.x, COB_ALERT.y)
     }
+  }
+
+  if (annotations?.topNoticeText?.trim()) {
+    const alertText = annotations.topNoticeText.trim().toUpperCase()
+    ctx.fillStyle = annotations.topNoticeColor === "black" ? "black" : "rgb(220,0,0)"
+    const fitted = fitWrappedText(ctx, alertText, 1160, 1, FONT_SIZE, 12)
+    ctx.font = `bold ${fitted.fontSize}px DejaVuSansBold`
+    ctx.fillText(fitted.lines[0], 20, 40)
   }
 
   if (annotations?.incentiveAlert) {

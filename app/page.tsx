@@ -20,7 +20,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.41"
+const APP_VERSION = "V1.42"
 
 type CobChoice = "harvested" | "standard" | "non_dup" | "carve_out" | "mob" | "no_cob" | "unknown" | "custom"
 type IncentiveChoice = "yes" | "no"
@@ -131,6 +131,10 @@ export default function Home() {
   const [missingFieldChoices, setMissingFieldChoices] = useState<Record<string, MissingFieldChoice>>({})
   const [missingFieldCustom, setMissingFieldCustom] = useState<Record<string, string>>({})
   const [redFields, setRedFields] = useState<string[]>([])
+  const [copayAlertEnabled, setCopayAlertEnabled] = useState(false)
+  const [copayAlertColor, setCopayAlertColor] = useState<"red" | "black">("red")
+  const [copayAlertChoice, setCopayAlertChoice] = useState<"standard" | "custom">("standard")
+  const [copayAlertCustom, setCopayAlertCustom] = useState("")
   const fullInputRef = useRef<HTMLInputElement>(null)
   const basicInputRef = useRef<HTMLInputElement>(null)
 
@@ -207,6 +211,10 @@ export default function Home() {
               orthoColor,
               hygSixMonthAlert,
               redFields,
+              topNoticeText: copayAlertEnabled
+                ? (copayAlertChoice === "custom" ? copayAlertCustom.trim() || "COL COPAY ON HYG DPO-CAP" : "COL COPAY ON HYG DPO-CAP")
+                : "",
+              topNoticeColor: copayAlertColor,
             },
           }),
         })
@@ -230,7 +238,8 @@ export default function Home() {
   }, [status, pendingFields, passcode, conflicts, choices, customValues, primaryStatus, carrier, headerFlags,
     groupNumberChoice, groupNumberAppend, groupNumberCustom, cobChoice, cobCustom, showSelectedCobAlert,
     incentiveChoice, incentiveAlert, incentiveRedBox, orthoMissingChoice, orthoCustom, orthoCustomColor,
-    hygSixMonthAlert, waitingPeriodChoice, waitingPeriodCustom, missingFieldChoices, missingFieldCustom, redFields])
+    hygSixMonthAlert, waitingPeriodChoice, waitingPeriodCustom, missingFieldChoices, missingFieldCustom, redFields,
+    copayAlertEnabled, copayAlertColor, copayAlertChoice, copayAlertCustom])
 
   function selectFile(file: File, role: "full" | "basic") {
     if (file.type !== "application/pdf") {
@@ -284,6 +293,10 @@ export default function Home() {
     setMissingFieldChoices({})
     setMissingFieldCustom({})
     setRedFields([])
+    setCopayAlertEnabled(false)
+    setCopayAlertColor("red")
+    setCopayAlertChoice("standard")
+    setCopayAlertCustom("")
 
     const formData = new FormData()
     formData.append("passcode", passcode)
@@ -508,6 +521,23 @@ export default function Home() {
       ].join("\n"))
     }
 
+    const topNoticeText = copayAlertEnabled
+      ? copayAlertChoice === "custom"
+        ? copayAlertCustom.trim()
+        : "COL COPAY ON HYG DPO-CAP"
+      : ""
+    if (copayAlertEnabled && copayAlertChoice === "custom" && !topNoticeText) {
+      setErrorMsg("Please enter the custom top notice text.")
+      return
+    }
+    if (topNoticeText) {
+      notes.push([
+        "Top Copay Notice",
+        `Text: ${topNoticeText.toUpperCase()}`,
+        `Color: ${copayAlertColor}`,
+      ].join("\n"))
+    }
+
     setStatus("rendering")
     setErrorMsg("")
     setReviewNotes(notes.join("\n\n"))
@@ -529,6 +559,8 @@ export default function Home() {
             orthoColor,
             hygSixMonthAlert,
             redFields,
+            topNoticeText,
+            topNoticeColor: copayAlertColor,
           },
         }),
       })
@@ -805,6 +837,39 @@ export default function Home() {
                     {label}
                   </label>
                 ))}
+                <div className="border-t border-gray-200 pt-3">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+                    <input type="checkbox" checked={copayAlertEnabled} onChange={(event) => setCopayAlertEnabled(event.target.checked)} />
+                    Add caps text at top: COL COPAY ON HYG DPO-CAP
+                  </label>
+                  {copayAlertEnabled && (
+                    <div className="mt-3 space-y-3 pl-6">
+                      <div className="flex flex-wrap gap-4">
+                        <label className="flex items-center gap-2 text-sm font-semibold text-red-700">
+                          <input type="radio" name="copay-alert-color" checked={copayAlertColor === "red"} onChange={() => setCopayAlertColor("red")} />
+                          RED
+                        </label>
+                        <label className="flex items-center gap-2 text-sm font-semibold text-black">
+                          <input type="radio" name="copay-alert-color" checked={copayAlertColor === "black"} onChange={() => setCopayAlertColor("black")} />
+                          BLACK
+                        </label>
+                      </div>
+                      <label className="flex items-center gap-2 text-sm text-gray-800">
+                        <input type="radio" name="copay-alert-text" checked={copayAlertChoice === "standard"} onChange={() => setCopayAlertChoice("standard")} />
+                        COL COPAY ON HYG DPO-CAP
+                      </label>
+                      <div>
+                        <label className="flex items-center gap-2 text-sm text-gray-800">
+                          <input type="radio" name="copay-alert-text" checked={copayAlertChoice === "custom"} onChange={() => setCopayAlertChoice("custom")} />
+                          CUSTOM
+                        </label>
+                        {copayAlertChoice === "custom" && (
+                          <input type="text" value={copayAlertCustom} onChange={(event) => setCopayAlertCustom(event.target.value)} placeholder="Enter custom top text" className="mt-2 w-full rounded-md border border-gray-300 px-3 py-2 text-sm uppercase text-gray-900" />
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </fieldset>
 
@@ -1120,6 +1185,10 @@ export default function Home() {
                 setMissingFieldChoices({})
                 setMissingFieldCustom({})
                 setRedFields([])
+                setCopayAlertEnabled(false)
+                setCopayAlertColor("red")
+                setCopayAlertChoice("standard")
+                setCopayAlertCustom("")
                 if (fullInputRef.current) fullInputRef.current.value = ""
                 if (basicInputRef.current) basicInputRef.current.value = ""
               }}
