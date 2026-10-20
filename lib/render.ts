@@ -48,6 +48,26 @@ function strokeRoundedBox(
   ctx.stroke()
 }
 
+function drawTopNotice(
+  ctx: ReturnType<ReturnType<typeof createCanvas>["getContext"]>,
+  text: string,
+  region: { x: number; baselineY: number; width: number },
+  color: "red" | "black" = "red"
+) {
+  const normalized = text.trim().toUpperCase()
+  if (!normalized) return
+
+  ctx.save()
+  ctx.beginPath()
+  ctx.rect(region.x, region.baselineY - 18, region.width, 22)
+  ctx.clip()
+  ctx.fillStyle = color === "black" ? "black" : "rgb(220,0,0)"
+  const fitted = fitWrappedText(ctx, normalized, region.width, 1, 16, 9)
+  ctx.font = `bold ${fitted.fontSize}px DejaVuSansBold`
+  ctx.fillText(fitted.lines[0], region.x, region.baselineY)
+  ctx.restore()
+}
+
 function wrapText(
   ctx: ReturnType<ReturnType<typeof createCanvas>["getContext"]>,
   text: string,
@@ -251,33 +271,20 @@ export async function renderForm(
       : automaticAlertText
 
     if (alertText) {
-      ctx.fillStyle = "rgb(220,0,0)"
-      const fitted = fitWrappedText(ctx, alertText, COB_ALERT.x2 - COB_ALERT.x, 1, FONT_SIZE, 10)
-      ctx.font = `bold ${fitted.fontSize}px DejaVuSansBold`
-      ctx.fillText(fitted.lines[0], COB_ALERT.x, COB_ALERT.y)
+      drawTopNotice(ctx, alertText, { x: COB_ALERT.x, baselineY: 68, width: COB_ALERT.x2 - COB_ALERT.x })
     }
   }
 
   if (annotations?.topNoticeText?.trim()) {
-    const alertText = annotations.topNoticeText.trim().toUpperCase()
-    ctx.fillStyle = annotations.topNoticeColor === "black" ? "black" : "rgb(220,0,0)"
-    const fitted = fitWrappedText(ctx, alertText, 1160, 1, FONT_SIZE, 12)
-    ctx.font = `bold ${fitted.fontSize}px DejaVuSansBold`
-    ctx.fillText(fitted.lines[0], 20, 40)
+    drawTopNotice(ctx, annotations.topNoticeText, { x: 20, baselineY: 38, width: 1160 }, annotations.topNoticeColor)
   }
 
   if (annotations?.incentiveAlert) {
-    ctx.fillStyle = "rgb(220,0,0)"
-    ctx.font = `bold ${FONT_SIZE}px DejaVuSansBold`
-    ctx.fillText("INCENTIVE", 20, COB_ALERT.y)
+    drawTopNotice(ctx, "INCENTIVE", { x: 20, baselineY: 68, width: 130 })
   }
 
   if (annotations?.hygSixMonthAlert) {
-    ctx.fillStyle = "rgb(220,0,0)"
-    const alertText = "HYG 6 MONTHS + 1 DAY"
-    const fitted = fitWrappedText(ctx, alertText, 440, 1, FONT_SIZE, 12)
-    ctx.font = `bold ${fitted.fontSize}px DejaVuSansBold`
-    ctx.fillText(fitted.lines[0], 170, COB_ALERT.y)
+    drawTopNotice(ctx, "HYG 6 MONTHS + 1 DAY", { x: 170, baselineY: 68, width: 440 })
   }
 
   // --- Night Guard circle ---
