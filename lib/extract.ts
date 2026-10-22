@@ -516,8 +516,14 @@ export async function extractFields(
       ...conflict.source_details,
     ].join(" "))
   )
-  if (!conflicts.some((conflict) => conflict.field_key === "fee_schedule")) {
-    const standardFeeOptions = ["PREMIER", "DPO-CAP", "UCR", "LOW-FEE", "HIGH-FEE", "AUTH", "GUARDIAN"]
+  const standardFeeOptions = ["PREMIER", "DPO-CAP", "UCR", "LOW-FEE", "HIGH-FEE", "AUTH", "GUARDIAN"]
+  const feeScheduleConflict = conflicts.find((conflict) => conflict.field_key === "fee_schedule")
+  if (feeScheduleConflict) {
+    const recommendation = fields.fee_schedule.trim().toUpperCase()
+    feeScheduleConflict.options = standardFeeOptions.includes(recommendation)
+      ? [recommendation, ...standardFeeOptions.filter((option) => option !== recommendation)]
+      : standardFeeOptions
+  } else {
     const recommendation = fields.fee_schedule.trim().toUpperCase()
     conflicts.push({
       field_key: "fee_schedule",

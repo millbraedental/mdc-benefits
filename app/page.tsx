@@ -20,7 +20,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.44"
+const APP_VERSION = "V1.45"
 
 type CobChoice = "harvested" | "standard" | "non_dup" | "carve_out" | "mob" | "no_cob" | "unknown" | "custom"
 type IncentiveChoice = "yes" | "no"
@@ -808,10 +808,6 @@ export default function Home() {
                   <input type="checkbox" checked={incentiveRedBox} onChange={(event) => setIncentiveRedBox(event.target.checked)} />
                   Add a red box around the Incentive Plan field
                 </label>
-                <label className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
-                  <input type="checkbox" checked={incentiveAlert} onChange={(event) => setIncentiveAlert(event.target.checked)} />
-                  Add red INCENTIVE at the top
-                </label>
               </div>
             </fieldset>
 
@@ -844,13 +840,28 @@ export default function Home() {
                     {label}
                   </label>
                 ))}
+              </div>
+            </fieldset>
+
+            <fieldset className="rounded-lg border border-red-200 bg-white p-4">
+              <legend className="px-1 text-sm font-semibold text-red-800">Top Text Warnings</legend>
+              <p className="mb-3 text-sm text-gray-700">These warnings use protected areas at the top of the form so they cannot overlap.</p>
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                  <input type="checkbox" checked={incentiveAlert} onChange={(event) => setIncentiveAlert(event.target.checked)} />
+                  Add red “INCENTIVE” text at top
+                </label>
+                <label className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                  <input type="checkbox" checked={hygSixMonthAlert} onChange={(event) => setHygSixMonthAlert(event.target.checked)} />
+                  Add red “HYG 6 MONTHS + 1 DAY” text at top
+                </label>
                 {headerFlags.includes("bwx_freq") && (
-                  <label className="ml-6 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                  <label className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
                     <input type="checkbox" checked={bwxFreqAlert} onChange={(event) => setBwxFreqAlert(event.target.checked)} />
                     Add red “BWX FREQ” text at top
                   </label>
                 )}
-                <div className="border-t border-gray-200 pt-3">
+                <div className="rounded-md border border-gray-200 p-3">
                   <label className="flex items-center gap-2 text-sm font-semibold text-gray-800">
                     <input type="checkbox" checked={copayAlertEnabled} onChange={(event) => setCopayAlertEnabled(event.target.checked)} />
                     Add caps text at top: COL COPAY ON HYG DPO-CAP
@@ -884,14 +895,6 @@ export default function Home() {
                   )}
                 </div>
               </div>
-            </fieldset>
-
-            <fieldset className="rounded-lg border border-amber-200 bg-white p-4">
-              <legend className="px-1 text-sm font-semibold text-gray-900">Hygiene Timing Warning</legend>
-              <label className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
-                <input type="checkbox" checked={hygSixMonthAlert} onChange={(event) => setHygSixMonthAlert(event.target.checked)} />
-                Add red “HYG 6 MONTHS + 1 DAY” at the top
-              </label>
             </fieldset>
 
             {conflicts.map((conflict, index) => conflict.field_key === "cob" || conflict.field_key === "waiting_period" || missingReviewFields(pendingFields).some((field) => field.key === conflict.field_key) ? null : (
