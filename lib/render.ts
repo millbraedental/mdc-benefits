@@ -1,7 +1,7 @@
 import { createCanvas, loadImage, GlobalFonts } from "@napi-rs/canvas"
 import * as fs from "fs"
 import * as path from "path"
-import { FIELDS, CIRCLES, COB_ALERT, HEADER_BOXES } from "./fields"
+import { FIELDS, CIRCLES, HEADER_BOXES } from "./fields"
 import type { ExtractedFields } from "./extract"
 
 const FONT_SIZE = 18
@@ -49,23 +49,30 @@ function strokeRoundedBox(
   ctx.stroke()
 }
 
-function drawTopNotice(
+function drawCenteredTopNotices(
   ctx: ReturnType<ReturnType<typeof createCanvas>["getContext"]>,
-  text: string,
-  region: { x: number; baselineY: number; width: number },
-  color: "red" | "black" = "red"
+  notices: Array<{ text: string; color?: "red" | "black" }>
 ) {
-  const normalized = text.trim().toUpperCase()
-  if (!normalized) return
+  const visible = notices.filter((notice) => notice.text.trim())
+  if (visible.length === 0) return
+
+  const maxFontSize = visible.length >= 5 ? 10 : visible.length === 4 ? 12 : visible.length === 3 ? 14 : 16
+  const lineHeight = maxFontSize + 2
+  const firstBaseline = visible.length === 1
+    ? 52
+    : 53 - ((visible.length - 1) * lineHeight) / 2
 
   ctx.save()
   ctx.beginPath()
-  ctx.rect(region.x, region.baselineY - 18, region.width, 22)
+  ctx.rect(20, 20, 1160, 60)
   ctx.clip()
-  ctx.fillStyle = color === "black" ? "black" : "rgb(220,0,0)"
-  const fitted = fitWrappedText(ctx, normalized, region.width, 1, 16, 9)
-  ctx.font = `bold ${fitted.fontSize}px DejaVuSansBold`
-  ctx.fillText(fitted.lines[0], region.x, region.baselineY)
+  ctx.textAlign = "center"
+  visible.forEach((notice, index) => {
+    const fitted = fitWrappedText(ctx, notice.text.trim().toUpperCase(), 1140, 1, maxFontSize, 8)
+    ctx.fillStyle = notice.color === "black" ? "black" : "rgb(220,0,0)"
+    ctx.font = `bold ${fitted.fontSize}px DejaVuSansBold`
+    ctx.fillText(fitted.lines[0], 612, firstBaseline + index * lineHeight)
+  })
   ctx.restore()
 }
 
@@ -250,8 +257,9 @@ export async function renderForm(
     }
   }
 
-  // --- COB Alert ---
+  // --- Centered top alerts ---
   const cob = fields.cob?.trim()
+  let cobAlertText: string | null = null
   {
     const normalizedCob = cob?.toUpperCase() ?? ""
     const cobIsUnknown = !cob || ["MISSING", "REVIEW", "UNKNOWN", "PLEASE REVIEW"].includes(normalizedCob)
@@ -267,35 +275,18 @@ export async function renderForm(
             : ["NO COB", "DOES NOT COORDINATE", "NO COORDINATION OF BENEFITS"].includes(normalizedCob)
               ? "NO COORDINATION OF BENEFITS"
               : null
-    const alertText = annotations?.cobAlertText !== undefined
+    cobAlertText = annotations?.cobAlertText !== undefined
       ? annotations.cobAlertText.trim() || null
       : automaticAlertText
-
-    if (alertText) {
-      drawTopNotice(ctx, alertText, { x: COB_ALERT.x, baselineY: 68, width: COB_ALERT.x2 - COB_ALERT.x })
-    }
   }
 
-  if (annotations?.topNoticeText?.trim()) {
-    drawTopNotice(
-      ctx,
-      annotations.topNoticeText,
-      { x: 20, baselineY: 38, width: annotations.bwxFreqAlert ? 800 : 1160 },
-      annotations.topNoticeColor
-    )
-  }
-
-  if (annotations?.bwxFreqAlert) {
-    drawTopNotice(ctx, "BWX FREQ", { x: 840, baselineY: 38, width: 340 })
-  }
-
-  if (annotations?.incentiveAlert) {
-    drawTopNotice(ctx, "INCENTIVE", { x: 20, baselineY: 68, width: 130 })
-  }
-
-  if (annotations?.hygSixMonthAlert) {
-    drawTopNotice(ctx, "HYG 6 MONTHS + 1 DAY", { x: 170, baselineY: 68, width: 440 })
-  }
+  drawCenteredTopNotices(ctx, [
+    ...(annotations?.topNoticeText?.trim() ? [{ text: annotations.topNoticeText, color: annotations.topNoticeColor }] : []),
+    ...(annotations?.bwxFreqAlert ? [{ text: "BWX FREQ", color: "red" as const }] : []),
+    ...(annotations?.incentiveAlert ? [{ text: "INCENTIVE", color: "red" as const }] : []),
+    ...(annotations?.hygSixMonthAlert ? [{ text: "HYG 6 MONTHS + 1 DAY", color: "red" as const }] : []),
+    ...(cobAlertText ? [{ text: cobAlertText, color: "red" as const }] : []),
+  ])
 
   // --- Night Guard circle ---
   ctx.strokeStyle = "black"

@@ -20,7 +20,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.45"
+const APP_VERSION = "V1.46"
 
 type CobChoice = "harvested" | "standard" | "non_dup" | "carve_out" | "mob" | "no_cob" | "unknown" | "custom"
 type IncentiveChoice = "yes" | "no"
@@ -845,7 +845,7 @@ export default function Home() {
 
             <fieldset className="rounded-lg border border-red-200 bg-white p-4">
               <legend className="px-1 text-sm font-semibold text-red-800">Top Text Warnings</legend>
-              <p className="mb-3 text-sm text-gray-700">These warnings use protected areas at the top of the form so they cannot overlap.</p>
+              <p className="mb-3 text-sm text-gray-700">Selected warnings are centered and stacked vertically at the top of the form.</p>
               <div className="space-y-3">
                 <label className="flex items-center gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
                   <input type="checkbox" checked={incentiveAlert} onChange={(event) => setIncentiveAlert(event.target.checked)} />
