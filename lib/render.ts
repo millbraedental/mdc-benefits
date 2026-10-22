@@ -56,22 +56,29 @@ function drawCenteredTopNotices(
   const visible = notices.filter((notice) => notice.text.trim())
   if (visible.length === 0) return
 
-  const maxFontSize = visible.length >= 5 ? 10 : visible.length === 4 ? 12 : visible.length === 3 ? 14 : 16
-  const lineHeight = maxFontSize + 2
-  const firstBaseline = visible.length === 1
-    ? 52
-    : 53 - ((visible.length - 1) * lineHeight) / 2
+  const maxFontSize = 16
+  const lineHeight = 20
+  const firstBaseline = 88 - ((visible.length - 1) * lineHeight) / 2
 
   ctx.save()
   ctx.beginPath()
-  ctx.rect(20, 20, 1160, 60)
+  ctx.rect(520, 22, 300, 116)
   ctx.clip()
   ctx.textAlign = "center"
   visible.forEach((notice, index) => {
-    const fitted = fitWrappedText(ctx, notice.text.trim().toUpperCase(), 1140, 1, maxFontSize, 8)
+    let renderedText = notice.text.trim().toUpperCase()
+    let fontSize = maxFontSize
+    for (; fontSize > 10; fontSize--) {
+      ctx.font = `bold ${fontSize}px DejaVuSansBold`
+      if (ctx.measureText(renderedText).width <= 290) break
+    }
+    ctx.font = `bold ${fontSize}px DejaVuSansBold`
+    while (renderedText && ctx.measureText(`${renderedText}…`).width > 290) {
+      renderedText = renderedText.slice(0, -1).trimEnd()
+    }
+    if (renderedText !== notice.text.trim().toUpperCase()) renderedText = `${renderedText}…`
     ctx.fillStyle = notice.color === "black" ? "black" : "rgb(220,0,0)"
-    ctx.font = `bold ${fitted.fontSize}px DejaVuSansBold`
-    ctx.fillText(fitted.lines[0], 612, firstBaseline + index * lineHeight)
+    ctx.fillText(renderedText, 670, firstBaseline + index * lineHeight)
   })
   ctx.restore()
 }
