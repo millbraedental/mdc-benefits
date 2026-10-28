@@ -20,7 +20,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.47"
+const APP_VERSION = "V1.48"
 
 type CobChoice = "harvested" | "standard" | "non_dup" | "carve_out" | "mob" | "no_cob" | "unknown" | "custom"
 type IncentiveChoice = "yes" | "no"
@@ -50,7 +50,7 @@ const DEDICATED_REVIEW_FIELDS = new Set([
 
 function needsMissingReview(value: unknown) {
   const normalized = String(value ?? "").trim().toUpperCase()
-  return !normalized || ["UNKNOWN", "MISSING", "REVIEW", "PLEASE REVIEW"].includes(normalized)
+  return !normalized || ["N/A", "UNKNOWN", "MISSING", "REVIEW", "PLEASE REVIEW"].includes(normalized)
 }
 
 function missingReviewFields(fields: Record<string, unknown> | null) {

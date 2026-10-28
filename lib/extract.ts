@@ -428,30 +428,36 @@ function estimateCost(
   }
 }
 
-function validateExtractedFields(fields: ExtractedFields, deferredFields = new Set<string>()): string[] {
-  const reasons: string[] = []
+type ValidationIssue = {
+  fieldKey: (typeof FIELD_KEYS)[number]
+  reason: string
+}
+
+function validateExtractedFields(fields: ExtractedFields, deferredFields = new Set<string>()): ValidationIssue[] {
+  const issues: ValidationIssue[] = []
 
   for (const key of FIELD_KEYS) {
     if (typeof fields[key] !== "string") {
-      reasons.push(`${key} was not returned as text.`)
+      issues.push({ fieldKey: key, reason: `${key} was not returned as text.` })
     }
   }
 
-  const datePattern = /^(?:\d{2}-[A-Z]{3}-\d{2}|MISSING|N\/A|Auth)$/
+  const datePattern = /^(?:\d{2}-[A-Z]{3}-\d{2}|MISSING|N\/A|UNKNOWN|REVIEW|PLEASE REVIEW|AUTH)$/i
   for (const key of ["effective_date", "last_bwx", "last_fmx", "last_pano", "patient_dob"] as const) {
     if (!deferredFields.has(key) && !datePattern.test(fields[key])) {
-      reasons.push(`${key} has an invalid REV22 date value: ${fields[key]}`)
+      issues.push({ fieldKey: key, reason: `${key} has an invalid REV22 date value: ${fields[key]}` })
     }
   }
 
-  if (!deferredFields.has("max") && !/^(?:\$[\d,]+|MISSING)$/.test(fields.max)) {
-    reasons.push(`max has an invalid dollar value: ${fields.max}`)
+  const dollarPattern = /^(?:\$[\d,]+|MISSING|N\/A|UNKNOWN|REVIEW|PLEASE REVIEW)$/i
+  if (!deferredFields.has("max") && !dollarPattern.test(fields.max)) {
+    issues.push({ fieldKey: "max", reason: `max has an invalid dollar value: ${fields.max}` })
   }
-  if (!deferredFields.has("ded") && !/^(?:\$[\d,]+|MISSING)$/.test(fields.ded)) {
-    reasons.push(`ded has an invalid dollar value: ${fields.ded}`)
+  if (!deferredFields.has("ded") && !dollarPattern.test(fields.ded)) {
+    issues.push({ fieldKey: "ded", reason: `ded has an invalid dollar value: ${fields.ded}` })
   }
 
-  return reasons
+  return issues
 }
 
 export async function extractFields(
@@ -564,16 +570,24 @@ export async function extractFields(
       conflictFields.add(key)
     }
   }
-  const validationReasons = validateExtractedFields(
+  const validationIssues = validateExtractedFields(
     fields,
     conflictFields
   )
 
-  if (validationReasons.length > 0) {
-    throw new ReviewRequiredError(
-      validationReasons,
-      cost
-    )
+  for (const issue of validationIssues) {
+    if (conflictFields.has(issue.fieldKey)) continue
+    const harvestedValue = String(fields[issue.fieldKey] ?? "").trim()
+    const label = REVIEW_LABELS[issue.fieldKey] ?? issue.fieldKey.replaceAll("_", " ")
+    conflicts.push({
+      field_key: issue.fieldKey,
+      label,
+      question: `The harvested ${label} value looks unusual. What should be printed?`,
+      options: harvestedValue ? [harvestedValue, "UNKNOWN"] : ["UNKNOWN"],
+      source_details: [issue.reason],
+    })
+    conflictFields.add(issue.fieldKey)
+    modelReviewReasons.push(issue.reason)
   }
 
   if (fields.review_required && conflicts.length === 0 && modelReviewReasons.length === 0) {
