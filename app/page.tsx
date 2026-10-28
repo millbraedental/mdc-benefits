@@ -20,7 +20,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.48"
+const APP_VERSION = "V1.49"
 
 type CobChoice = "harvested" | "standard" | "non_dup" | "carve_out" | "mob" | "no_cob" | "unknown" | "custom"
 type IncentiveChoice = "yes" | "no"
@@ -51,6 +51,12 @@ const DEDICATED_REVIEW_FIELDS = new Set([
 function needsMissingReview(value: unknown) {
   const normalized = String(value ?? "").trim().toUpperCase()
   return !normalized || ["N/A", "UNKNOWN", "MISSING", "REVIEW", "PLEASE REVIEW"].includes(normalized)
+}
+
+function compsFrequencyNeedsBox(fields: Record<string, unknown> | null) {
+  if (!fields) return false
+  const value = String(fields.freq_composite ?? "").trim().toUpperCase()
+  return /\bUNLIMITED\b|\bNO\s+(?:FREQ(?:UENCY)?|LIMIT(?:ATION)?)\b/.test(value)
 }
 
 function missingReviewFields(fields: Record<string, unknown> | null) {
@@ -136,6 +142,7 @@ export default function Home() {
   const [copayAlertChoice, setCopayAlertChoice] = useState<"standard" | "custom">("standard")
   const [copayAlertCustom, setCopayAlertCustom] = useState("")
   const [bwxFreqAlert, setBwxFreqAlert] = useState(false)
+  const [compsRedBox, setCompsRedBox] = useState<"yes" | "no">("no")
   const fullInputRef = useRef<HTMLInputElement>(null)
   const basicInputRef = useRef<HTMLInputElement>(null)
 
@@ -205,7 +212,11 @@ export default function Home() {
             annotations: {
               primaryStatus: primaryStatus || "none",
               carrier: carrier || "none",
-              flags: [...headerFlags, ...(incentiveRedBox ? ["incentive_plan_red_box"] : [])],
+              flags: [
+                ...headerFlags,
+                ...(incentiveRedBox ? ["incentive_plan_red_box"] : []),
+                ...(compsFrequencyNeedsBox(pendingFields) && compsRedBox === "yes" ? ["comps_freq"] : []),
+              ],
               cobAlertText,
               incentiveAlert,
               incentiveColor: incentiveChoice === "yes" ? "red" : "black",
@@ -241,7 +252,7 @@ export default function Home() {
     groupNumberChoice, groupNumberAppend, groupNumberCustom, cobChoice, cobCustom, showSelectedCobAlert,
     incentiveChoice, incentiveAlert, incentiveRedBox, orthoMissingChoice, orthoCustom, orthoCustomColor,
     hygSixMonthAlert, waitingPeriodChoice, waitingPeriodCustom, missingFieldChoices, missingFieldCustom, redFields,
-    copayAlertEnabled, copayAlertColor, copayAlertChoice, copayAlertCustom, bwxFreqAlert])
+    copayAlertEnabled, copayAlertColor, copayAlertChoice, copayAlertCustom, bwxFreqAlert, compsRedBox])
 
   function selectFile(file: File, role: "full" | "basic") {
     if (file.type !== "application/pdf") {
@@ -300,6 +311,7 @@ export default function Home() {
     setCopayAlertChoice("standard")
     setCopayAlertCustom("")
     setBwxFreqAlert(false)
+    setCompsRedBox("no")
 
     const formData = new FormData()
     formData.append("passcode", passcode)
@@ -325,6 +337,7 @@ export default function Home() {
         setExtractionReviewReasons(json.reviewReasons)
         setIncentiveChoice(String(json.fields.incentive_plan ?? "").trim().toUpperCase() === "YES" ? "yes" : "no")
         setMissingFieldChoices(Object.fromEntries(missingReviewFields(json.fields).map((field) => [field.key, "harvested"])))
+        setCompsRedBox(compsFrequencyNeedsBox(json.fields) ? "yes" : "no")
         setShowSelectedCobAlert(Boolean(predefinedCobAlert(json.fields.cob)))
         setCostUsd(json.costUsd)
         setStatus("review")
@@ -543,6 +556,13 @@ export default function Home() {
     if (headerFlags.includes("bwx_freq") && bwxFreqAlert) {
       notes.push("BWX FREQ top warning: red")
     }
+    if (compsFrequencyNeedsBox(pendingFields)) {
+      notes.push([
+        "Composite Frequency Alert",
+        `Harvested value: ${String(pendingFields.freq_composite ?? "")}`,
+        `COMPS red box: ${compsRedBox.toUpperCase()}`,
+      ].join("\n"))
+    }
 
     setStatus("rendering")
     setErrorMsg("")
@@ -558,7 +578,11 @@ export default function Home() {
           annotations: {
             primaryStatus,
             carrier,
-            flags: [...headerFlags, ...(incentiveRedBox ? ["incentive_plan_red_box"] : [])],
+            flags: [
+              ...headerFlags,
+              ...(incentiveRedBox ? ["incentive_plan_red_box"] : []),
+              ...(compsFrequencyNeedsBox(pendingFields) && compsRedBox === "yes" ? ["comps_freq"] : []),
+            ],
             cobAlertText,
             incentiveAlert,
             incentiveColor: incentiveChoice === "yes" ? "red" : "black",
@@ -755,6 +779,24 @@ export default function Home() {
                 ))}
               </div>
             </fieldset>
+
+            {compsFrequencyNeedsBox(pendingFields) && (
+              <fieldset className="rounded-lg border border-red-200 bg-white p-4">
+                <legend className="px-1 text-sm font-semibold text-red-800">Composite Frequency Alert</legend>
+                <p className="mb-2 text-sm text-gray-700">Composite frequency is unlimited or has no frequency limit. Add a red box around COMPS?</p>
+                <p className="mb-3 text-xs text-gray-500">Harvested: {String(pendingFields?.freq_composite ?? "")}</p>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-red-700">
+                    <input type="radio" name="comps-red-box" checked={compsRedBox === "yes"} onChange={() => setCompsRedBox("yes")} />
+                    YES — add red box
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-800">
+                    <input type="radio" name="comps-red-box" checked={compsRedBox === "no"} onChange={() => setCompsRedBox("no")} />
+                    NO
+                  </label>
+                </div>
+              </fieldset>
+            )}
 
             {missingReviewFields(pendingFields).map((field) => {
               const choice = missingFieldChoices[field.key] ?? "harvested"
@@ -1206,6 +1248,7 @@ export default function Home() {
                 setCopayAlertChoice("standard")
                 setCopayAlertCustom("")
                 setBwxFreqAlert(false)
+                setCompsRedBox("no")
                 if (fullInputRef.current) fullInputRef.current.value = ""
                 if (basicInputRef.current) basicInputRef.current.value = ""
               }}

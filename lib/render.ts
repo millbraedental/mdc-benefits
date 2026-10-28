@@ -11,7 +11,7 @@ const CIRCLE_THICKNESS = 3
 
 export type PrimaryStatus = "primary" | "secondary" | "none"
 export type CarrierBox = "delta" | "dpo_cap" | "metlife" | "guardian" | "none"
-export type HeaderFlag = "oon_auth" | "ok_for_hyg" | "col_pct" | "col_ded" | "col_dpo_cap" | "col_hyg" | "col_full_ucr" | "prev_col_pct_ded" | "fmx_col_pct_ded" | "pas_col_pct_ded" | "px_ex_freq" | "prob_d140_freq" | "bwx_freq" | "oon_ins_plan_red_box" | "incentive_plan_red_box" | "fluoride_freq"
+export type HeaderFlag = "oon_auth" | "ok_for_hyg" | "col_pct" | "col_ded" | "col_dpo_cap" | "col_hyg" | "col_full_ucr" | "prev_col_pct_ded" | "fmx_col_pct_ded" | "pas_col_pct_ded" | "px_ex_freq" | "prob_d140_freq" | "bwx_freq" | "oon_ins_plan_red_box" | "incentive_plan_red_box" | "comps_freq" | "fluoride_freq"
 
 export interface HeaderAnnotations {
   primaryStatus: PrimaryStatus

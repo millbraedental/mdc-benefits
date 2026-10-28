@@ -142,5 +142,6 @@ export const HEADER_BOXES = {
   pas_col_pct_ded:  { x: 267, y: 980, width: 214, height: 55 },
   oon_ins_plan_red_box: { x: 829, y: 95, width: 266, height: 56 },
   incentive_plan_red_box: { x: 853, y: 792, width: 335, height: 55 },
+  comps_freq: { x: 779, y: 1392, width: 198, height: 47 },
   fluoride_freq: { x: 980, y: 1392, width: 220, height: 47 },
 } as const
