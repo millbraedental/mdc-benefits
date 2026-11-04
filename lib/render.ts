@@ -167,6 +167,37 @@ export async function renderForm(
       strokeRoundedBox(ctx, HEADER_BOXES[annotations.carrier])
     }
     for (const flag of annotations.flags) {
+      if (flag === "oon_ins_plan_red_box") {
+        const payorField = FIELDS.find((field) => field.key === "payor")
+        if (payorField) {
+          const value = fields.payor || "MISSING"
+          const boxWidth = payorField.x2 - payorField.x
+          const boxHeight = payorField.boxHeight ?? BOX_HEIGHT
+          const fitted = fitWrappedText(
+            ctx,
+            value,
+            boxWidth - 4,
+            payorField.maxLines ?? 2,
+            payorField.maxFontSize ?? FONT_SIZE,
+            payorField.minFontSize ?? 12,
+            boxHeight - 2
+          )
+          const lineHeight = fitted.fontSize + 1
+          const totalHeight = fitted.lines.length * lineHeight
+          const firstBaseline = payorField.y - (boxHeight - totalHeight) / 2 - totalHeight + fitted.fontSize
+          const renderedWidth = Math.max(...fitted.lines.map((line) => ctx.measureText(line).width))
+          const left = payorField.x - 8
+          const top = firstBaseline - fitted.fontSize - 6
+          const bottom = firstBaseline + (fitted.lines.length - 1) * lineHeight + 7
+          strokeRoundedBox(ctx, {
+            x: left,
+            y: top,
+            width: Math.min(boxWidth + 16, Math.max(82, renderedWidth + 20)),
+            height: bottom - top,
+          })
+        }
+        continue
+      }
       if (flag === "px_ex_freq") {
         ctx.font = `${FONT_SIZE}px DejaVuSans`
         const valueWidth = ctx.measureText(fields.freq_exam_prophy || "").width
