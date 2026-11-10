@@ -555,13 +555,22 @@ export async function extractFields(
     })
   }
   const conflictFields = new Set(conflicts.map((conflict) => conflict.field_key))
+  const needsUserResolution = (value: string) => {
+    const normalized = value.trim().toUpperCase()
+    return !normalized ||
+      /^(?:N\/A|UNKNOWN|MISSING|REVIEW|PLEASE\s+REVIEW)(?:\b|\s*[:\-–—])/.test(normalized) ||
+      /\b(?:REVIEW\s+REQUIRED|PLEASE\s+REVIEW)\b/.test(normalized)
+  }
+  const dedicatedReviewFields = new Set([
+    "group_number", "cob", "incentive_plan", "waiting_period", "ortho_max", "ortho_pct", "fee_schedule",
+  ])
   for (const key of FIELD_KEYS) {
-    if (fields[key].toLowerCase().includes("please review") && !conflictFields.has(key)) {
+    if (needsUserResolution(fields[key]) && !dedicatedReviewFields.has(key) && !conflictFields.has(key)) {
       const label = REVIEW_LABELS[key] ?? key.replaceAll("_", " ")
       conflicts.push({
         field_key: key,
         label,
-        question: `What value should be printed for ${label}?`,
+        question: `The harvested ${label} value is blank or unresolved. What should be printed?`,
         options: [],
         source_details: modelReviewReasons.length > 0
           ? modelReviewReasons

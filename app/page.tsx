@@ -20,7 +20,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.50"
+const APP_VERSION = "V1.51"
 
 type CobChoice = "harvested" | "standard" | "non_dup" | "carve_out" | "mob" | "no_cob" | "unknown" | "custom"
 type IncentiveChoice = "yes" | "no"
@@ -50,7 +50,9 @@ const DEDICATED_REVIEW_FIELDS = new Set([
 
 function needsMissingReview(value: unknown) {
   const normalized = String(value ?? "").trim().toUpperCase()
-  return !normalized || ["N/A", "UNKNOWN", "MISSING", "REVIEW", "PLEASE REVIEW"].includes(normalized)
+  return !normalized ||
+    /^(?:N\/A|UNKNOWN|MISSING|REVIEW|PLEASE\s+REVIEW)(?:\b|\s*[:\-–—])/.test(normalized) ||
+    /\b(?:REVIEW\s+REQUIRED|PLEASE\s+REVIEW)\b/.test(normalized)
 }
 
 function compsFrequencyNeedsBox(fields: Record<string, unknown> | null) {
