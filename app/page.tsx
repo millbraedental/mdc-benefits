@@ -20,7 +20,7 @@ type ReviewResponse = {
   costUsd: number | null
 }
 
-const APP_VERSION = "V1.51"
+const APP_VERSION = "V1.52"
 
 type CobChoice = "harvested" | "standard" | "non_dup" | "carve_out" | "mob" | "no_cob" | "unknown" | "custom"
 type IncentiveChoice = "yes" | "no"
@@ -156,7 +156,7 @@ export default function Home() {
       const draftFields = { ...pendingFields }
 
       for (const field of missingReviewFields(pendingFields)) {
-        const choice = missingFieldChoices[field.key] ?? "harvested"
+        const choice = missingFieldChoices[field.key] ?? "custom"
         if (choice === "unknown") draftFields[field.key] = "UNKNOWN"
         if (choice === "custom" && missingFieldCustom[field.key]?.trim()) {
           draftFields[field.key] = missingFieldCustom[field.key].trim()
@@ -329,6 +329,7 @@ export default function Home() {
         setConflicts(json.conflicts)
         setChoices(Object.fromEntries(
           json.conflicts.flatMap((conflict, index) => {
+            if (conflict.options.length === 0) return [[index, "__custom__"]]
             if (conflict.field_key !== "fee_schedule") return []
             const recommendation = json.fields.fee_schedule
             return typeof recommendation === "string" && conflict.options.includes(recommendation)
@@ -338,7 +339,7 @@ export default function Home() {
         ))
         setExtractionReviewReasons(json.reviewReasons)
         setIncentiveChoice(String(json.fields.incentive_plan ?? "").trim().toUpperCase() === "YES" ? "yes" : "no")
-        setMissingFieldChoices(Object.fromEntries(missingReviewFields(json.fields).map((field) => [field.key, "harvested"])))
+        setMissingFieldChoices(Object.fromEntries(missingReviewFields(json.fields).map((field) => [field.key, "custom"])))
         setCompsRedBox(compsFrequencyNeedsBox(json.fields) ? "yes" : "no")
         setShowSelectedCobAlert(Boolean(predefinedCobAlert(json.fields.cob)))
         setCostUsd(json.costUsd)
@@ -393,7 +394,7 @@ export default function Home() {
     const missingFieldKeys = new Set(missingFields.map((field) => field.key))
 
     for (const field of missingFields) {
-      const choice = missingFieldChoices[field.key] ?? "harvested"
+      const choice = missingFieldChoices[field.key] ?? "custom"
       const harvested = String(pendingFields[field.key] ?? "")
       const resolvedValue = choice === "harvested"
         ? harvested
@@ -801,7 +802,7 @@ export default function Home() {
             )}
 
             {missingReviewFields(pendingFields).map((field) => {
-              const choice = missingFieldChoices[field.key] ?? "harvested"
+              const choice = missingFieldChoices[field.key] ?? "custom"
               const harvested = String(pendingFields?.[field.key] ?? "")
               return (
                 <fieldset key={field.key} className="rounded-lg border border-amber-200 bg-white p-4">
